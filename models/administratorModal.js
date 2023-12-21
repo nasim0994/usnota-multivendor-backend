@@ -34,19 +34,6 @@ AdministratorSchema.pre("save", async function (next) {
   next();
 });
 
-AdministratorSchema.methods.comparePassword = function (password, cb) {
-  bcrypt.compare(password, this.password, (err, isMatch) => {
-    if (err) {
-      return cb(err);
-    } else {
-      if (!isMatch) {
-        return cb(null, isMatch);
-      }
-      return cb(null, this);
-    }
-  });
-};
-
 const Administrator = mongoose.model("Administrator", AdministratorSchema);
 
 module.exports = Administrator;

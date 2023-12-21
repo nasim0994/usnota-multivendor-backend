@@ -1,16 +1,15 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
-const LogoSchema = new mongoose.Schema({
-  name: {
-    type: String,
-    required: true,
+const LogoSchema = new mongoose.Schema(
+  {
+    logo: {
+      type: String,
+      required: true,
+    },
   },
-  logo: {
-    type: String,
-    required: true,
-  },
-}, { timestamps: false });
+  { timestamps: false }
+);
 
-const Logo = mongoose.model('Logo', LogoSchema);
+const Logo = mongoose.model("Logo", LogoSchema);
 
 module.exports = Logo;
