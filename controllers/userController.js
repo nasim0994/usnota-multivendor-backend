@@ -1,27 +1,13 @@
-const db = require("../models");
-const User = db.users;
-const { createJsonWebToken } = require("../utils/jsonwebtoken");
-const { uuid: uuid4 } = require("uuidv4");
 const fs = require("fs");
+const User = require("../models/userModel");
+const bcrypt = require("bcrypt");
+const { createJsonWebToken } = require("../utils/jsonWebToken");
 
 exports.registerUser = async (req, res) => {
   try {
     const userInfo = req.body;
-    const isExisted = await User.findOne({
-      where: {
-        phone: userInfo?.phone,
-      },
-    });
 
-    if (isExisted) {
-      return res.status(400).json({
-        success: false,
-        message: "User already exist. please login",
-      });
-    }
-
-    const id = Date.now() + "-" + uuid4();
-    const result = await User.create({ id, ...userInfo });
+    const result = await User.create(userInfo);
 
     res.status(200).json({
       success: true,
@@ -41,20 +27,22 @@ exports.loginUser = async (req, res) => {
     const { phone, password } = req.body;
 
     // 2. Load User
-    const user = await User.findOne({ where: { phone: phone } });
+    const user = await User.findOne({ phone: phone });
 
     if (!user) {
       return res.status(401).json({
         success: false,
-        message: "User not found",
+        error: "User not found",
       });
     }
 
     // 3. Match Password
-    if (password !== user.password) {
-      return res.status(401).json({
+    const isMatch = await bcrypt.compare(password, user?.password);
+
+    if (!isMatch) {
+      return res.status(404).json({
         success: false,
-        message: "Email or Password not match",
+        error: "Email or password is incorrect",
       });
     }
 
@@ -82,7 +70,7 @@ exports.loginUser = async (req, res) => {
 
 exports.getMe = async (req, res) => {
   try {
-    const user = await User.findOne({ where: { phone: req.user.phone } });
+    const user = await User.findOne({ phone: req.user.phone });
     if (user) {
       res.status(200).json({
         success: true,
@@ -91,7 +79,7 @@ exports.getMe = async (req, res) => {
     } else {
       res.status(404).json({
         success: false,
-        message: "user not found",
+        error: "user not found",
       });
     }
   } catch (error) {
@@ -106,14 +94,24 @@ exports.updateImage = async (req, res) => {
   try {
     const { id } = req.params;
     const image = req?.file?.filename ? req.file.filename : "";
-    const user = await User.findOne({ where: { id: id } });
+
+    const user = await User.findOne({ _id: id });
     const uploadedImage = user?.image;
 
     if (uploadedImage && uploadedImage !== null) {
-      fs.unlinkSync("upload/images/users/" + uploadedImage);
+      fs.unlink(`./uploads/user/${uploadedImage}`, (err) => {
+        if (err) {
+          console.log(err);
+          return;
+        }
+      });
     }
 
-    await User.update({ image: image }, { where: { id: id } });
+    await User.findByIdAndUpdate(id, {
+      $set: {
+        image: image,
+      },
+    });
 
     res.status(200).json({
       success: true,
@@ -130,7 +128,7 @@ exports.updateImage = async (req, res) => {
 exports.updateInfo = async (req, res) => {
   try {
     const { id } = req.params;
-    await User.update(req.body, { where: { id: id } });
+    await User.findByIdAndUpdate(id, req?.body, { new: true });
 
     res.status(200).json({
       success: true,
@@ -146,12 +144,11 @@ exports.updateInfo = async (req, res) => {
 
 exports.getAllUsers = async (req, res) => {
   try {
-    const result = await User.findAll({
-      attributes: { exclude: ["password"] },
-    });
+    const result = await User.find({});
 
     res.status(200).json({
       success: true,
+      message: "get all users success",
       data: result,
     });
   } catch (error) {
@@ -164,7 +161,7 @@ exports.getAllUsers = async (req, res) => {
 
 exports.getAllCustomers = async (req, res) => {
   try {
-    const customer = await User.findAll({ where: { role: "user" } });
+    const customer = await User.find({}).where("role").equals("user");
 
     res.status(200).json({
       success: true,
@@ -180,11 +177,11 @@ exports.getAllCustomers = async (req, res) => {
 
 exports.getAllAdmins = async (req, res) => {
   try {
-    const customer = await User.findAll({ where: { role: "admin" } });
+    const admins = await User.find({}).where("role").equals("admin");
 
     res.status(200).json({
       success: true,
-      data: customer,
+      data: admins,
     });
   } catch (error) {
     res.status(400).json({
@@ -197,15 +194,25 @@ exports.getAllAdmins = async (req, res) => {
 exports.deleteAnUser = async (req, res) => {
   try {
     const { id } = req.params;
-    const user = await User.findOne({ where: { id: id } });
-    if (!user) {
-      return res.status(400).json({
+
+    const isExist = await User.findById(id);
+    if (!isExist) {
+      return res.status(404).json({
         success: false,
-        message: "user not found",
+        error: "User not found",
       });
     }
 
-    await User.destroy({ where: { id: id } });
+    if (isExist?.image && isExist?.image !== null) {
+      fs.unlink(`./uploads/user/${isExist?.image}`, (err) => {
+        if (err) {
+          console.log(err);
+          return;
+        }
+      });
+    }
+
+    await User.findByIdAndDelete(id);
 
     res.status(200).json({
       success: true,
@@ -221,22 +228,30 @@ exports.deleteAnUser = async (req, res) => {
 
 exports.addAdmin = async (req, res) => {
   try {
-    const adminInfo = req.body;
-    const isExisted = await User.findOne({ where: { phone: adminInfo.phone } });
-    if (isExisted) {
-      return res.status(400).json({
+    const id = req?.params?.id;
+
+    const isExist = await User.findById(id);
+    if (!isExist) {
+      return res.status(404).json({
         success: false,
-        message: "User already exist.",
+        error: "User not found",
       });
     }
 
-    const id = uuid4();
-    const result = await User.create({ id, ...adminInfo });
+    let newRole = "admin";
+    if (isExist.role === "admin") {
+      newRole = "user";
+    }
+
+    await User.findByIdAndUpdate(id, {
+      $set: {
+        role: newRole,
+      },
+    });
 
     res.status(200).json({
       success: true,
-      message: "user create success",
-      data: result,
+      message: "update role success",
     });
   } catch (error) {
     res.status(400).json({

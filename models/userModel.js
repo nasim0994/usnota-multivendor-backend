@@ -13,6 +13,7 @@ const UserSchema = new mongoose.Schema(
       type: String,
       required: true,
       default: "user",
+      enum: ["user", "admin"],
     },
     email: {
       type: String,
@@ -27,6 +28,7 @@ const UserSchema = new mongoose.Schema(
     password: {
       type: String,
       required: true,
+      select: false, // hide password from response
     },
     city: {
       type: String,

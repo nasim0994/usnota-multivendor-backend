@@ -1,11 +1,10 @@
-const {
-  updateContact,
-  getContact,
-} = require("../controllers/contactController");
 const verifyAdmin = require("../middleware/verifyAdmin");
+const {getContacts,addContact,updateContact } = require("../controllers/contactController");
+
 const router = require("express").Router();
 
-router.get("/", getContact);
-router.put("/update-contact/:id", verifyAdmin, updateContact);
+router.get("/", getContacts);
+router.patch("/update-contact/:id", verifyAdmin, updateContact);
+router.post("/add-contact", verifyAdmin, addContact);
 
 module.exports = router;

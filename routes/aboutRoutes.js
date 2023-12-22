@@ -1,27 +1,32 @@
-const router = require("express").Router();
+const express = require("express");
+const router = express.Router();
 const multer = require("multer");
+const {
+  getAboutUs,
+  updateAboutUs,
+  createAboutUs,
+} = require("../controllers/aboutControllers");
 const verifyAdmin = require("../middleware/verifyAdmin");
 
-const { updateAbout, getAbout } = require("../controllers/aboutControllers");
-
 const storage = multer.diskStorage({
-  destination: "upload/images/about/",
-  filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-    cb(null, uniqueSuffix + "-" + file.originalname);
+  destination: function (req, file, cb) {
+    cb(null, "./uploads/aboutus");
+  },
+  filename: function (req, file, cb) {
+    cb(null, `${Date.now()}-${file.originalname}`);
   },
 });
-const upload = multer({
-  storage,
-});
-module.exports = upload;
+const upload = multer({ storage: storage });
 
-router.put(
+router.patch(
   "/update-about/:id",
   verifyAdmin,
   upload.single("image"),
-  updateAbout
+  updateAboutUs
 );
-router.get("/", getAbout);
+
+router.get("/", getAboutUs);
+
+router.post("/add-aboutus", verifyAdmin, upload.single("image"), createAboutUs);
 
 module.exports = router;

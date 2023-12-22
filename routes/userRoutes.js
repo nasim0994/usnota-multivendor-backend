@@ -1,32 +1,18 @@
 const router = require("express").Router();
 const multer = require("multer");
-const {
-  registerUser,
-  loginUser,
-  getMe,
-  updateImage,
-  updateInfo,
-  getAllUsers,
-  getAllCustomers,
-  getAllAdmins,
-  deleteAnUser,
-  addAdmin,
-} = require("../controllers/userController");
-const verifyToken = require("../middleware/verifyToken");
 const verifyAdmin = require("../middleware/verifyAdmin");
+const { addAdmin, registerUser, loginUser, getMe, getAllUsers, getAllCustomers, getAllAdmins, updateImage, updateInfo, deleteAnUser } = require("../controllers/userController");
+const verifyToken = require("../middleware/verifyToken");
 
 const storage = multer.diskStorage({
-  destination: "upload/images/users/",
-  filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-    cb(null, uniqueSuffix + "-" + file.originalname);
+  destination: function (req, file, cb) {
+    cb(null, "./uploads/user");
+  },
+  filename: function (req, file, cb) {
+    cb(null, `${Date.now()}-${file.originalname}`);
   },
 });
-
-const upload = multer({
-  storage,
-});
-module.exports = upload;
+const upload = multer({ storage: storage });
 
 router.post("/add-admin", verifyAdmin, addAdmin); // add new admin
 router.post("/register", registerUser); //user info save database
