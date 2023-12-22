@@ -8,6 +8,7 @@ exports.addLogo = async (req, res) => {
     };
 
     const result = await Logo.create(logo);
+    console.log(result);
 
     if (!result) {
       return res.status(404).json({
@@ -69,7 +70,7 @@ exports.updateLogo = async (req, res) => {
     if (isLogo) {
       await Logo.findByIdAndUpdate(id, { logo: logo }, { new: true });
 
-      fs.unlink(`./uploads/logos/${isLogo?.logo}`, (err) => {
+      fs.unlink(`./uploads/logo/${isLogo?.logo}`, (err) => {
         if (err) {
           console.error(err);
           return;

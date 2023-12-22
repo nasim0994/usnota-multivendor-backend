@@ -1,7 +1,18 @@
 const router = require("express").Router();
 const multer = require("multer");
 const verifyAdmin = require("../middleware/verifyAdmin");
-const { addAdmin, registerUser, loginUser, getMe, getAllUsers, getAllCustomers, getAllAdmins, updateImage, updateInfo, deleteAnUser } = require("../controllers/userController");
+const {
+  addAdmin,
+  registerUser,
+  loginUser,
+  getMe,
+  getAllUsers,
+  getAllCustomers,
+  getAllAdmins,
+  updateImage,
+  updateInfo,
+  deleteAnUser,
+} = require("../controllers/userController");
 const verifyToken = require("../middleware/verifyToken");
 
 const storage = multer.diskStorage({

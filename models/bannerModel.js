@@ -2,10 +2,6 @@ const mongoose = require("mongoose");
 
 const BannerSchema = new mongoose.Schema(
   {
-    order: {
-      type: Number,
-      required: true,
-    },
     image: {
       type: String,
       required: true,

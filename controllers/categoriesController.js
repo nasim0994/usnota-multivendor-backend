@@ -68,7 +68,7 @@ exports.getCategory = async (req, res) => {
 exports.updateCategory = async (req, res) => {
   try {
     const { id } = req?.params;
-    const { name, order } = req?.body;
+    const data = req?.body;
     const icon = req.file?.filename;
 
     const category = await Categories.findById(id);
@@ -87,16 +87,14 @@ exports.updateCategory = async (req, res) => {
 
     if (icon) {
       categoryData = {
-        name,
-        order,
-        slug: slugify(name),
+        ...data,
+        slug: slugify(data?.name),
         icon: icon,
       };
     } else {
       categoryData = {
-        name,
-        order,
-        slug: slugify(name),
+        ...data,
+        slug: slugify(data?.name),
         icon: categoryIcon,
       };
     }

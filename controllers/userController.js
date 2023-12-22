@@ -6,6 +6,7 @@ const { createJsonWebToken } = require("../utils/jsonWebToken");
 exports.registerUser = async (req, res) => {
   try {
     const userInfo = req.body;
+    // console.log(userInfo);
 
     const result = await User.create(userInfo);
 
@@ -25,6 +26,7 @@ exports.registerUser = async (req, res) => {
 exports.loginUser = async (req, res) => {
   try {
     const { phone, password } = req.body;
+    console.log(phone, password);
 
     // 2. Load User
     const user = await User.findOne({ phone: phone });

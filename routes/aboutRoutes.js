@@ -27,6 +27,6 @@ router.patch(
 
 router.get("/", getAboutUs);
 
-router.post("/add-aboutus", verifyAdmin, upload.single("image"), createAboutUs);
+router.post("/add-about", verifyAdmin, upload.single("image"), createAboutUs);
 
 module.exports = router;

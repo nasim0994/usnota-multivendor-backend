@@ -3,7 +3,6 @@ const Banner = require("../models/bannerModel");
 
 exports.addBanner = async (req, res) => {
   try {
-    const { order } = req?.body;
     const image = req?.file?.filename;
 
     if (!image) {
@@ -14,7 +13,6 @@ exports.addBanner = async (req, res) => {
     }
 
     const banner = {
-      order: order,
       image: image,
     };
 
