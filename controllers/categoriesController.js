@@ -31,7 +31,7 @@ exports.addCategory = async (req, res) => {
 
 exports.getCategories = async (req, res) => {
   try {
-    let categories = await Categories.find({});
+    let categories = await Categories.find({}).sort({ order: 1 });
 
     res.status(200).json({
       success: true,
@@ -74,14 +74,6 @@ exports.updateCategory = async (req, res) => {
     const category = await Categories.findById(id);
     const categoryIcon = category?.icon;
 
-    if (icon && categoryIcon) {
-      fs.unlink(`./uploads/categories/${categoryIcon}`, (err) => {
-        if (err) {
-          console.log(err);
-          return;
-        }
-      });
-    }
 
     let categoryData;
 
@@ -102,6 +94,14 @@ exports.updateCategory = async (req, res) => {
     const result = await Categories.findByIdAndUpdate(id, categoryData, {
       new: true,
     });
+
+    if (icon && categoryIcon) {
+      fs.unlink(`./uploads/categories/${categoryIcon}`, (err) => {
+        if (err) {
+          console.log(err);
+        }
+      });
+    }
 
     res.status(200).json({
       success: true,
