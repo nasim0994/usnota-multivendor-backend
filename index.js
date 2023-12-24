@@ -12,6 +12,7 @@ const contactRouter = require("./routes/contactRoutes");
 const bannerRouter = require("./routes/bannerRoutes");
 const aboutRouter = require("./routes/aboutRoutes");
 const categoryRouter = require("./routes/categoriesRoutes");
+const productRouter = require("./routes/productRoutes");
 
 const app = express();
 app.use(cors());
@@ -30,6 +31,7 @@ app.use("/contact", contactRouter);
 app.use("/banner", bannerRouter);
 app.use("/about", aboutRouter);
 app.use("/category", categoryRouter);
+app.use("/product", productRouter);
 
 app.get("/", (req, res) => {
   res.send(`Server is Running on port ${port}`);

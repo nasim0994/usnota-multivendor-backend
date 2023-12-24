@@ -1,64 +1,36 @@
 const mongoose = require("mongoose");
 
-const VariantSchema = {
-  size: {
-    type: String,
-    required: true,
-  },
-  color: {
-    type: String,
-    required: true,
-  },
-  colorCode: {
-    type: String,
-    required: true,
-  },
-  quantity: {
-    type: Number,
-    required: true,
-  },
-};
+const productSchema = new mongoose.Schema({
+  images: [String],
+  title: String,
+  category: String,
+  brand: String,
+  stock: Number,
+  sellPrice: Number,
+  purchasePrice: Number,
+  description: String,
+  formData: [
+    {
+      color: String,
+      colorCode: String,
+      info: [
+        {
+          size: String,
+          quantity: Number,
+          price: Number,
+        },
+      ],
+    },
+  ],
+  colors: [
+    {
+      name: String,
+      code: String,
+    },
+  ],
+  sizes: [String],
+});
 
-const ProductSchema = new mongoose.Schema(
-  {
-    title: {
-      type: String,
-      required: true,
-    },
-    category: {
-      type: String,
-      required: true,
-    },
-    price: {
-      type: Number,
-      required: true,
-    },
-    discount: {
-      type: Number,
-    },
-    totalStock: {
-      type: Number,
-      required: true,
-    },
-    brand: {
-      type: String,
-    },
-    description: {
-      type: String,
-    },
-    slug: {
-      type: String,
-      required: true,
-      unique: true,
-    },
-    image: {
-      type: String,
-    },
-    variants: [VariantSchema],
-  },
-  { timestamps: true }
-);
-
-const Product = mongoose.model("Product", ProductSchema);
+const Product = mongoose.model("Product", productSchema);
 
 module.exports = Product;
