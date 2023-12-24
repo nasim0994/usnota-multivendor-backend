@@ -8,8 +8,12 @@ const productSchema = new mongoose.Schema({
   stock: Number,
   sellPrice: Number,
   purchasePrice: Number,
+  discount: {
+    type: Number,
+    default: 0,
+  },
   description: String,
-  formData: [
+  varients: [
     {
       color: String,
       colorCode: String,
