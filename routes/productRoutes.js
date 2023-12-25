@@ -4,6 +4,8 @@ const {
   addProduct,
   getAllProducts,
   getProductById,
+  getProductBySlug,
+  deleteProductById,
 } = require("../controllers/productController");
 
 const storage = multer.diskStorage({
@@ -17,11 +19,14 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage: storage }).array("images", 5);
 
-
 router.get("/all-products", getAllProducts);
 
 router.get("/:id", getProductById);
 
+router.get("/getbyslug/:slug", getProductBySlug);
+
 router.post("/add-product", upload, addProduct);
+
+router.delete("/:id", deleteProductById);
 
 module.exports = router;

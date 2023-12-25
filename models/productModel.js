@@ -2,34 +2,77 @@ const mongoose = require("mongoose");
 
 const productSchema = new mongoose.Schema({
   images: [String],
-  title: String,
-  category: String,
-  brand: String,
-  stock: Number,
-  sellPrice: Number,
-  purchasePrice: Number,
+  title: {
+    type: String,
+    required: true,
+  },
+  slug: {
+    type: String,
+    required: true,
+    unique: true,
+  },
+  category: {
+    type: String,
+    required: true,
+  },
+  brand: {
+    type: String,
+    required: true,
+  },
+  totalStock: {
+    type: Number,
+    required: true,
+  },
+  sellPrice: {
+    type: Number,
+    required: true,
+  },
   discount: {
     type: Number,
     default: 0,
   },
-  description: String,
+  description: {
+    type: String,
+    required: true,
+  },
   varients: [
     {
-      color: String,
-      colorCode: String,
+      color: {
+        type: String,
+        required: true,
+      },
+      colorCode: {
+        type: String,
+        required: true,
+      },
       info: [
         {
-          size: String,
-          quantity: Number,
-          price: Number,
+          size: {
+            type: String,
+            required: true,
+          },
+          quantity: {
+            type: Number,
+            required: true,
+          },
+          price: {
+            type: Number,
+            required: true,
+          },
         },
       ],
     },
   ],
   colors: [
     {
-      name: String,
-      code: String,
+      name: {
+        type: String,
+        required: true,
+      },
+      code: {
+        type: String,
+        required: true,
+      },
     },
   ],
   sizes: [String],
