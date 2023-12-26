@@ -1,5 +1,7 @@
 const Order = require("../models/orderModel");
 const Product = require("../models/productModel");
+const { calculatePagination } = require("../utils/calculatePagination");
+const { pick } = require("../utils/pick");
 
 exports.addOrder = async (req, res) => {
   const data = req?.body;
@@ -93,15 +95,29 @@ exports.getOrderById = async (req, res) => {
 };
 
 exports.getAllOrders = async (req, res) => {
+  const paginationOptions = pick(req.query, ["page", "limit"]);
+
+  const { page, limit, skip } = calculatePagination(paginationOptions);
+
   try {
     const orders = await Order.find({})
       .populate("userId")
-      .populate("products.productId");
+      .populate("products.productId")
+      .skip(skip)
+      .limit(limit)
+      .lean();
+
+    const total = await Order.countDocuments({});
 
     res.status(200).json({
       success: true,
       message: "Orders fetched successfully",
       data: orders,
+      meta: {
+        total,
+        page,
+        limit,
+      },
     });
   } catch (error) {
     res.status(400).json({

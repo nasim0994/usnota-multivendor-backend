@@ -185,3 +185,90 @@ exports.deleteProductById = async (req, res) => {
     });
   }
 };
+
+exports.updateProduct = async (req, res) => {
+  const id = req?.params?.id;
+  const images = req?.files?.map((file) => file.filename);
+
+  const { title, varients, colors, sizes } = req?.body;
+
+  const slug = slugify(`${title}-${Date.now()}`);
+
+  try {
+    const isProduct = await Product.findById(id);
+    if (!isProduct) {
+      images?.forEach((imagePath) => {
+        const fullPath = `./uploads/products/${imagePath}`;
+        fs.unlink(fullPath, (err) => {
+          if (err) {
+            console.error(err);
+          }
+        });
+      });
+
+      return res.status(404).json({
+        success: false,
+        message: "Product not found",
+      });
+    }
+
+    if (images) {
+      const product = {
+        ...req?.body,
+        images,
+        slug: slug,
+        varients: JSON.parse(varients),
+        colors: JSON.parse(colors),
+        sizes: JSON.parse(sizes),
+      };
+
+      const imagePaths = isProduct?.images;
+      imagePaths.forEach((imagePath) => {
+        const fullPath = `./uploads/products/${imagePath}`;
+        fs.unlink(fullPath, (err) => {
+          if (err) {
+            console.error(err);
+          }
+        });
+      });
+
+      await Product.findByIdAndUpdate(id, product, {
+        new: true,
+      });
+    } else {
+      const product = {
+        ...req?.body,
+        images: isProduct.images,
+        slug: slug,
+        varients: JSON.parse(varients),
+        colors: JSON.parse(colors),
+        sizes: JSON.parse(sizes),
+      };
+
+      await Product.findByIdAndUpdate(id, product, {
+        new: true,
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Product updated successfully",
+    });
+  } catch (error) {
+    if (images.length > 0) {
+      images.forEach((imagePath) => {
+        const fullPath = `./uploads/products/${imagePath}`;
+        fs.unlink(fullPath, (err) => {
+          if (err) {
+            console.error(err);
+          }
+        });
+      });
+    }
+
+    res.status(500).json({
+      success: false,
+      error: error.message,
+    });
+  }
+};
