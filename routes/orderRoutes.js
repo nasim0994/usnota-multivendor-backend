@@ -1,20 +1,24 @@
-// const router = require("express").Router();
-// const {
-//   addOrder,
-//   getAllOrders,
-//   getOrdersByUserId,
-//   getSingleOrder,
-//   updateStatusToPending,
-//   updateStatusToShipped,
-// } = require("../controllers/orderController");
+const {
+  addOrder,
+  getOrdersByUserId,
+  getOrderById,
+  getAllOrders,
+  deleteOrderById,
+  updateStatus,
+} = require("../controllers/orderController");
 
-// router.post("/post-order", addOrder);
-// router.get("/all-orders", getAllOrders);
-// router.get("/:id", getSingleOrder);
-// router.get("/user-orders/:id", getOrdersByUserId);
+const router = require("express").Router();
 
-// // update order status
+router.post("/post-order", addOrder);
+router.get("/all-orders", getAllOrders);
+router.get("/:id", getOrderById);
+router.get("/user-orders/:id", getOrdersByUserId);
+
+router.delete("/:id", deleteOrderById);
+
+router.patch("/update-status/:id", updateStatus);
+
 // router.put("/pendingToShipped/:id", updateStatusToPending);
 // router.put("/shippedToDelivered/:id", updateStatusToShipped);
 
-// module.exports = router;
+module.exports = router;

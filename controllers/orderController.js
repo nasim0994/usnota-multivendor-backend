@@ -1,175 +1,155 @@
-// const { uuid: uuid4 } = require("uuidv4");
-// const db = require("../models");
+const Order = require("../models/orderModel");
+const Product = require("../models/productModel");
 
-// // create main Model
-// const Order = db.orders;
-// const Product = db.products;
-// const User = db.users;
-// const Variant = db.variants;
+exports.addOrder = async (req, res) => {
+  const data = req?.body;
 
-// exports.addOrder = async (req, res) => {
-//   try {
-//     const { userId, products, city, district, street } = req.body;
-//     const id = uuid4();
-//     const orderInfo = {
-//       id,
-//       userId,
-//       status: "pending",
-//     };
+  try {
+    const result = await Order.create(data);
 
-//     for (const product of products) {
-//       const { productId, size, color, quantity } = product;
-//       const variant = await Variant.findOne({
-//         where: {
-//           productId,
-//           size,
-//           colorName: color,
-//         },
-//       });
-//       if (variant.quantity < quantity) {
-//         throw new Error(`Not enough stock for productId ${productId}`);
-//       }
-//     }
+    // data?.products?.forEach(async (product) => {
+    //   const { productId, quantity, size, color } = product;
 
-//     const order = await Order.create(orderInfo);
+    //   const selectedProduct = await Product.findOne({
+    //     _id: productId,
+    //   });
 
-//     products.map(async (product) => {
-//       const { productId, size, color, quantity } = product;
-//       await Variant.decrement(
-//         { quantity },
-//         {
-//           where: {
-//             productId,
-//             size,
-//             colorName: color,
-//           },
-//         }
-//       );
+    //   const selectedColorVarient = selectedProduct?.varients?.find(
+    //     (varient) => varient.color === color
+    //   );
 
-//       const existedProduct = await Product.findOne({
-//         where: { id: productId },
-//       });
+    //   const selectedSizeVarient = selectedColorVarient?.info?.find(
+    //     (varient) => varient.size === size
+    //   );
 
-//       await order.addProduct(existedProduct, {
-//         through: {
-//           quantity,
-//           size,
-//           color,
-//           city,
-//           district,
-//           street,
-//           userId,
-//         },
-//       });
-//     });
+    //   // Calculate the updated quantity
+    //   const updatedQuantity = selectedSizeVarient.quantity - parseInt(quantity);
 
-//     return res.status(200).json({
-//       status: true,
-//       data: order,
-//     });
-//   } catch (error) {
-//     res.status(400).json({
-//       status: false,
-//       message: error.message,
-//     });
-//   }
-// };
+    //   // Update the quantity in the database
+    //   await Product.findOneAndUpdate(
+    //     {
+    //       _id: productId,
+    //       "varients.color": color,
+    //       "varients.info.size": size,
+    //     },
+    //     { $set: { "varients.$.info.$[elem].quantity": updatedQuantity } },
+    //     {
+    //       new: true,
+    //     }
+    //   );
+    // });
 
-// exports.getAllOrders = async (req, res) => {
-//   try {
-//     const orders = await Order.findAll({
-//       include: [User, Product],
-//       attributes: { exclude: ["userId"] },
-//     });
-//     res.status(200).json({
-//       status: true,
-//       data: orders,
-//     });
-//   } catch (error) {
-//     res.status(400).json({
-//       status: false,
-//       message: error.message,
-//     });
-//   }
-// };
+    res.status(201).json({
+      success: true,
+      message: "Order added successfully",
+      //   data: result,
+    });
+  } catch (error) {
+    res.status(400).json({
+      success: false,
+      error: error.message,
+    });
+  }
+};
 
-// exports.getOrdersByUserId = async (req, res) => {
-//   const id = req.params.id;
+exports.getOrdersByUserId = async (req, res) => {
+  const id = req?.params?.id;
 
-//   const user = await User.findByPk(id, {
-//     include: {
-//       model: Order,
-//       include: Product,
-//     },
-//   });
+  try {
+    const orders = await Order.find({ userId: id });
 
-//   if (!user) {
-//     return res.status(404).json({ message: "User not found" });
-//   }
+    res.status(200).json({
+      success: true,
+      message: "Orders fetched successfully",
+      data: orders,
+    });
+  } catch (error) {
+    res.status(400).json({
+      success: false,
+      error: error.message,
+    });
+  }
+};
 
-//   res.status(200).json({
-//     status: true,
-//     data: user,
-//   });
-// };
+exports.getOrderById = async (req, res) => {
+  const id = req?.params?.id;
 
-// exports.getSingleOrder = async (req, res) => {
-//   try {
-//     const { id } = req.params;
-//     const order = await Order.findOne({
-//       include: [User, Product],
-//       where: { id: id },
-//     });
-//     res.status(200).json({
-//       status: true,
-//       data: order,
-//     });
-//   } catch (error) {
-//     res.status(400).json({
-//       status: false,
-//       message: error.message,
-//     });
-//   }
-// };
+  try {
+    const order = await Order.findById(id)
+      .populate("userId")
+      .populate("products.productId");
 
-// exports.updateStatusToPending = async (req, res) => {
-//   try {
-//     const { id } = req.params;
-//     await Order.update(
-//       { status: "Shipped" },
-//       {
-//         where: { id: id },
-//       }
-//     );
-//     res.status(200).json({
-//       success: true,
-//       message: "update success",
-//     });
-//   } catch (error) {
-//     res.status(400).json({
-//       success: false,
-//       message: error.message,
-//     });
-//   }
-// };
+    res.status(200).json({
+      success: true,
+      message: "Order fetched successfully",
+      data: order,
+    });
+  } catch (error) {
+    res.status(400).json({
+      success: false,
+      error: error.message,
+    });
+  }
+};
 
-// exports.updateStatusToShipped = async (req, res) => {
-//   try {
-//     const { id } = req.params;
-//     await Order.update(
-//       { status: "Delivered" },
-//       {
-//         where: { id: id },
-//       }
-//     );
-//     res.status(200).json({
-//       success: true,
-//       message: "update success",
-//     });
-//   } catch (error) {
-//     res.status(400).json({
-//       success: false,
-//       message: error.message,
-//     });
-//   }
-// };
+exports.getAllOrders = async (req, res) => {
+  try {
+    const orders = await Order.find({})
+      .populate("userId")
+      .populate("products.productId");
+
+    res.status(200).json({
+      success: true,
+      message: "Orders fetched successfully",
+      data: orders,
+    });
+  } catch (error) {
+    res.status(400).json({
+      success: false,
+      error: error.message,
+    });
+  }
+};
+
+exports.deleteOrderById = async (req, res) => {
+  const id = req?.params?.id;
+
+  try {
+    const result = await Order.findByIdAndDelete(id);
+
+    res.status(200).json({
+      success: true,
+      message: "Order deleted successfully",
+      data: result,
+    });
+  } catch (error) {
+    res.status(400).json({
+      success: false,
+      error: error.message,
+    });
+  }
+};
+
+exports.updateStatus = async (req, res) => {
+  const id = req?.params?.id;
+  const status = req?.body?.status;
+
+  try {
+    const result = await Order.findByIdAndUpdate(
+      id,
+      { $set: { status } },
+      { new: true }
+    );
+
+    res.status(200).json({
+      success: true,
+      message: "Order status updated successfully",
+      data: result,
+    });
+  } catch (error) {
+    res.status(400).json({
+      success: false,
+      error: error.message,
+    });
+  }
+};

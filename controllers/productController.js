@@ -1,38 +1,27 @@
 const Product = require("../models/productModel");
 const slugify = require("slugify");
 const fs = require("fs");
+const { calculatePagination } = require("../utils/calculatePagination");
+const { pick } = require("../utils/pick");
 
 exports.addProduct = async (req, res) => {
   const images = req?.files?.map((file) => file.filename);
-  const {
-    title,
-    category,
-    brand,
-    stock,
-    sellPrice,
-    purchasePrice,
-    description,
-    varients,
-    colors,
-    sizes,
-  } = req?.body;
 
-  const date = new Date();
-  const formattedDateTime = `${date.getFullYear()}-${
-    date.getMonth() + 1
-  }-${date.getDate()}-${date.getHours()}-${date.getMinutes()}-${date.getSeconds()}`;
-  const slug = slugify(`${title}-${formattedDateTime}`);
+  if (images.length < 1) {
+    return res.status(400).json({
+      success: false,
+      error: "Please upload at least one image",
+    });
+  }
+
+  const { title, varients, colors, sizes } = req?.body;
+
+  const slug = slugify(`${title}-${Date.now()}`);
 
   const product = {
+    ...req?.body,
     images,
-    title,
     slug: slug,
-    category,
-    brand,
-    stock,
-    sellPrice,
-    purchasePrice,
-    description,
     varients: JSON.parse(varients),
     colors: JSON.parse(colors),
     sizes: JSON.parse(sizes),
@@ -46,6 +35,17 @@ exports.addProduct = async (req, res) => {
       data: result,
     });
   } catch (error) {
+    if (images.length > 0) {
+      images.forEach((imagePath) => {
+        const fullPath = `./uploads/products/${imagePath}`;
+        fs.unlink(fullPath, (err) => {
+          if (err) {
+            console.error(err);
+          }
+        });
+      });
+    }
+
     res.status(500).json({
       success: false,
       error: error.message,
@@ -54,8 +54,28 @@ exports.addProduct = async (req, res) => {
 };
 
 exports.getAllProducts = async (req, res) => {
+  const paginationOptions = pick(req.query, ["page", "limit"]);
+  const filters = pick(req.query, ["category"]);
+
+  const { page, limit, skip } = calculatePagination(paginationOptions);
+  const { category } = filters;
+
   try {
-    const result = await Product.find({});
+    const andCondition = [];
+
+    if (category && category !== undefined) {
+      andCondition.push({ category: category });
+    }
+
+    const whereCondition =
+      andCondition.length > 0 ? { $and: andCondition } : {};
+
+    const result = await Product.find(whereCondition)
+      .skip(skip)
+      .limit(limit)
+      .lean();
+
+    const total = await Product.countDocuments(whereCondition);
 
     if (!result) {
       return res.status(404).json({
@@ -68,6 +88,11 @@ exports.getAllProducts = async (req, res) => {
       success: true,
       message: "All products",
       data: result,
+      meta: {
+        total,
+        page,
+        limit,
+      },
     });
   } catch (error) {
     res.status(500).json({
@@ -137,9 +162,9 @@ exports.deleteProductById = async (req, res) => {
       });
     }
 
-    const imagePaths = product.images;
+    const imagePaths = product?.images;
     imagePaths.forEach((imagePath) => {
-      const fullPath = `./uploads/${imagePath}`;
+      const fullPath = `./uploads/products/${imagePath}`;
       fs.unlink(fullPath, (err) => {
         if (err) {
           console.error(err);
@@ -147,12 +172,11 @@ exports.deleteProductById = async (req, res) => {
       });
     });
 
-    const result = await Product.findByIdAndDelete(id);
+    await Product.findByIdAndDelete(id);
 
     res.status(200).json({
       success: true,
       message: "Product deleted successfully",
-      data: result,
     });
   } catch (error) {
     res.status(500).json({
