@@ -1,6 +1,12 @@
 const fs = require("fs");
 const slugify = require("slugify");
 const Categories = require("../models/categoriesModel");
+const SubCategory = require("../models/subCategoryModel");
+const SubSubCategory = require("../models/subSubCategoryModel");
+
+// ---------------------------------------------------------------------------------------------------------
+// category
+// ---------------------------------------------------------------------------------------------------------
 
 exports.addCategory = async (req, res) => {
   try {
@@ -148,3 +154,37 @@ exports.deleteCategory = async (req, res) => {
     });
   }
 };
+
+
+// ---------------------------------------------------------------------------------------------------------
+// Sub category
+// ---------------------------------------------------------------------------------------------------------
+
+exports.addSubCategory = async(req,res) => {
+  try {
+    const { name, order, category } = req.body;
+    const sub_category = {
+      name,
+      order,
+      category,
+      slug: slugify(name),
+    };
+
+    const result = await SubCategory.create(sub_category);
+
+    res.status(200).json({
+      success: true,
+      message: "Sub Category created successfully",
+      data: result,
+    });
+  } catch (error) {
+    res.status(400).json({
+      success: false,
+      error: error.message,
+    });
+  }
+}
+
+// ---------------------------------------------------------------------------------------------------------
+// Sub SubCategory
+// ---------------------------------------------------------------------------------------------------------

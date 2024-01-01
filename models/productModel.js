@@ -18,16 +18,14 @@ const productSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  subCategory: {
+    type: String,
+  },
+  subSubCategory: {
+    type: String,
+  },
   brand: {
     type: String,
-    required: true,
-  },
-  totalStock: {
-    type: Number,
-    required: true,
-  },
-  sellPrice: {
-    type: Number,
     required: true,
   },
   discount: {
@@ -38,47 +36,18 @@ const productSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  varients: [
-    {
-      color: {
-        type: String,
-        required: true,
-      },
-      colorCode: {
-        type: String,
-        required: true,
-      },
-      info: [
-        {
-          size: {
-            type: String,
-            required: true,
-          },
-          quantity: {
-            type: Number,
-            required: true,
-          },
-          price: {
-            type: Number,
-            required: true,
-          },
-        },
-      ],
-    },
-  ],
-  colors: [
-    {
-      name: {
-        type: String,
-        required: true,
-      },
-      code: {
-        type: String,
-        required: true,
-      },
-    },
-  ],
-  sizes: [String],
+  sellingPrice: {
+    type: Number,
+  },
+  purchasePrice: {
+    type: Number,
+  },
+  quantity: {
+    type: Number,
+  },
+  variants:{
+    type: Array,
+  },
 });
 
 const Product = mongoose.model("Product", productSchema);
