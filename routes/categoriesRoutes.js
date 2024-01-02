@@ -12,6 +12,10 @@ const {
   updateSubSubCategory,
   deleteSubSubCategory,
   deleteSubCategory,
+  getSubCategories,
+  getSubCategoryById,
+  getSubSubCategories,
+  getSubSubCategoryById,
 } = require("../controllers/categoriesController");
 
 const storage = multer.diskStorage({
@@ -30,20 +34,24 @@ router.get("/allCategories", getCategories);
 
 // Sub Category:
 router.post("/addSubCategory", addSubCategory);
+router.get("/allSubCategories", getSubCategories);
 
 // Sub SubCategory:
 router.post("/addSubSubCategory", addSubSubCategory);
+router.get("/allSubSubCategories", getSubSubCategories);
 
 // Category:
-router.get("/:id", getCategory);
+router.get("/category/:id", getCategory);
 router.patch("/updateCategory/:id", upload.single("icon"), updateCategory);
 router.delete("/deleteCategory/:id", deleteCategory);
 
 // Sub Category:
+router.get("/subCategory/:id", getSubCategoryById);
 router.patch("/updateSubCategory/:id", updateSubCategory);
 router.delete("/deleteSubCategory/:id", deleteSubCategory);
 
 // Sub Sub Category:
+router.get("/subSubCategory/:id", getSubSubCategoryById);
 router.patch("/updateSubSubCategory/:id", updateSubSubCategory);
 router.delete("/deleteSubSubCategory/:id", deleteSubSubCategory);
 

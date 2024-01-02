@@ -64,8 +64,10 @@ exports.getCategories = async (req, res) => {
 exports.getCategory = async (req, res) => {
   try {
     const { id } = req.params;
-
-    const category = await Categories.findOne({ _id: id });
+    const category = await Categories.findOne({ _id: id }).populate(
+      "subCategories",
+      "name slug"
+    );
 
     res.status(200).json({
       success: true,
@@ -133,7 +135,6 @@ exports.updateCategory = async (req, res) => {
 exports.deleteCategory = async (req, res) => {
   try {
     const { id } = req?.params;
-
     const category = await Categories.findById(id);
 
     if (!category) {
@@ -194,10 +195,10 @@ exports.deleteCategory = async (req, res) => {
 
 exports.addSubCategory = async (req, res) => {
   try {
-    const { name, category, categoryId } = req.body;
+    const { name, categoryId } = req.body;
     const sub_category = {
       name,
-      category,
+      category: categoryId,
       slug: slugify(`${name}-${Date.now()}`),
     };
 
@@ -285,18 +286,58 @@ exports.deleteSubCategory = async (req, res) => {
   }
 };
 
+exports.getSubCategories = async (req, res) => {
+  try {
+    let subCategories = await SubCategory.find({}, "name slug").populate(
+      "category",
+      "name icon"
+    );
+
+    res.status(200).json({
+      success: true,
+      message: "Sub Category get success",
+      data: subCategories,
+    });
+  } catch (error) {
+    res.status(400).json({
+      success: false,
+      error: error.message,
+    });
+  }
+};
+
+exports.getSubCategoryById = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const subCategory = await SubCategory.findOne({ _id: id }).populate(
+      "category"
+    );
+
+    res.status(200).json({
+      success: true,
+      data: subCategory,
+    });
+  } catch (error) {
+    res.status(400).json({
+      success: false,
+      error: error.message,
+    });
+  }
+};
+
 // ---------------------------------------------------------------------------------------------------------
 // Sub SubCategory
 // ---------------------------------------------------------------------------------------------------------
 
 exports.addSubSubCategory = async (req, res) => {
   try {
-    const { name, category, subCategory, subCategoryId } = req.body;
+    const { name, categoryId, subCategoryId } = req.body;
     const sub_subCategory = {
       name,
-      category,
-      subCategory,
       slug: slugify(`${name}-${Date.now()}`),
+      category: categoryId,
+      subCategory: subCategoryId,
     };
 
     const result = await SubSubCategory.create(sub_subCategory);
@@ -349,7 +390,7 @@ exports.updateSubSubCategory = async (req, res) => {
 exports.deleteSubSubCategory = async (req, res) => {
   try {
     const { id } = req?.params;
-    const { subCategiryId } = req?.body;
+    const { subCategoryId } = req?.body;
     const subSubCategory = await SubSubCategory.findById(id);
 
     if (!subSubCategory) {
@@ -361,13 +402,51 @@ exports.deleteSubSubCategory = async (req, res) => {
 
     await SubSubCategory.deleteOne({ _id: id });
     await SubCategory.updateOne(
-      { _id: subCategiryId },
+      { _id: subCategoryId },
       { $pull: { subSubCategories: id } }
     );
 
     res.status(200).json({
       success: true,
       error: "Sub SubCategory delete success",
+    });
+  } catch (error) {
+    res.status(400).json({
+      success: false,
+      error: error.message,
+    });
+  }
+};
+
+exports.getSubSubCategories = async (req, res) => {
+  try {
+    let subSubCategories = await SubSubCategory.find({}).populate(
+      "category subCategory",
+      "name slug icon"
+    );
+
+    res.status(200).json({
+      success: true,
+      message: "Sub Category get success",
+      data: subSubCategories,
+    });
+  } catch (error) {
+    res.status(400).json({
+      success: false,
+      error: error.message,
+    });
+  }
+};
+
+exports.getSubSubCategoryById = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const subSubCategory = await SubSubCategory.findOne({ _id: id });
+
+    res.status(200).json({
+      success: true,
+      data: subSubCategory,
     });
   } catch (error) {
     res.status(400).json({

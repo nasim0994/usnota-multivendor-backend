@@ -15,6 +15,10 @@ const CategoriesSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    order: {
+      type: Number,
+      required: true,
+    },
     subCategories: [
       {
         type: mongoose.Types.ObjectId,
