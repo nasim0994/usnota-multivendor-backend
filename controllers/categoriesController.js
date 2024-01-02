@@ -235,7 +235,10 @@ exports.updateSubCategory = async (req, res) => {
       });
     }
 
-    await SubCategory.updateOne({ _id: id }, { name: name });
+    await SubCategory.updateOne(
+      { _id: id },
+      { name: name, slug: slugify(`${name}-${Date.now()}`) }
+    );
 
     res.status(200).json({
       success: true,
@@ -373,7 +376,10 @@ exports.updateSubSubCategory = async (req, res) => {
       });
     }
 
-    await SubSubCategory.updateOne({ _id: id }, { name: name });
+    await SubSubCategory.updateOne(
+      { _id: id },
+      { name: name, slug: slugify(`${name}-${Date.now()}`) }
+    );
 
     res.status(200).json({
       success: true,

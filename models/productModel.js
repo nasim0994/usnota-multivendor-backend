@@ -15,14 +15,16 @@ const productSchema = new mongoose.Schema({
     unique: true,
   },
   category: {
-    type: String,
-    required: true,
+    type: mongoose.Types.ObjectId,
+    ref: "Categories",
   },
   subCategory: {
-    type: String,
+    type: mongoose.Types.ObjectId,
+    ref: "SubCategory",
   },
   subSubCategory: {
-    type: String,
+    type: mongoose.Types.ObjectId,
+    ref: "SubSubCategory",
   },
   brand: {
     type: String,
@@ -45,7 +47,7 @@ const productSchema = new mongoose.Schema({
   quantity: {
     type: Number,
   },
-  variants:{
+  variants: {
     type: Array,
   },
 });
