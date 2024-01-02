@@ -41,8 +41,11 @@ exports.getCategories = async (req, res) => {
       .sort({ order: 1 })
       .populate({
         path: "subCategories",
-        populate: { path: "subSubCategories", select: "name slug" },
-        select: "name slug",
+        populate: {
+          path: "subSubCategories",
+          select: "name slug category subCategory",
+        },
+        select: "name slug category",
       });
 
     res.status(200).json({
@@ -132,26 +135,51 @@ exports.deleteCategory = async (req, res) => {
     const { id } = req?.params;
 
     const category = await Categories.findById(id);
+
+    if (!category) {
+      return res.status(400).json({
+        success: false,
+        error: "Category not found",
+      });
+    }
     const categoryIcon = category?.icon;
 
     if (categoryIcon) {
       fs.unlink(`./uploads/categories/${categoryIcon}`, (err) => {
         if (err) {
           console.log(err);
-          return;
         }
       });
+    }
 
-      res.status(200).json({
-        success: true,
-        message: "Delete success",
+    if (category?.subCategories?.length > 0) {
+      const subCategory = await SubCategory.find({
+        _id: { $in: category?.subCategories },
       });
-    } else {
-      res.status(400).json({
-        success: false,
-        error: "Category not found",
+
+      const subSubCategoryIds = subCategory.reduce((acc, subCategory) => {
+        acc.push(
+          ...subCategory.subSubCategories.map(
+            (subSubCategory) => subSubCategory._id
+          )
+        );
+        return acc;
+      }, []);
+      await SubSubCategory.deleteMany({ _id: { $in: subSubCategoryIds } });
+    }
+
+    if (category?.subCategories?.length > 0) {
+      await SubCategory.deleteMany({
+        _id: { $in: category.subCategories },
       });
     }
+
+    await Categories.deleteOne({ _id: id });
+
+    res.status(200).json({
+      success: true,
+      message: "Delete success",
+    });
   } catch (error) {
     res.status(400).json({
       success: false,
@@ -166,15 +194,16 @@ exports.deleteCategory = async (req, res) => {
 
 exports.addSubCategory = async (req, res) => {
   try {
-    const { name, categorySlug } = req.body;
+    const { name, category, categoryId } = req.body;
     const sub_category = {
       name,
-      slug: slugify(`${categorySlug}-${name}`),
+      category,
+      slug: slugify(`${name}-${Date.now()}`),
     };
 
     const result = await SubCategory.create(sub_category);
     await Categories.updateOne(
-      { slug: categorySlug },
+      { _id: categoryId },
       { $push: { subCategories: result?._id } }
     );
 
@@ -191,21 +220,88 @@ exports.addSubCategory = async (req, res) => {
   }
 };
 
+exports.updateSubCategory = async (req, res) => {
+  try {
+    const { id } = req?.params;
+    const { name } = req?.body;
+
+    const subCategory = await SubCategory.findById(id);
+
+    if (!subCategory) {
+      return res.status(400).json({
+        success: false,
+        error: "Sub Category not found",
+      });
+    }
+
+    await SubCategory.updateOne({ _id: id }, { name: name });
+
+    res.status(200).json({
+      success: true,
+      message: "Sub Category updated success",
+    });
+  } catch (error) {
+    res.status(400).json({
+      success: false,
+      error: error.message,
+    });
+  }
+};
+
+exports.deleteSubCategory = async (req, res) => {
+  try {
+    const { id } = req?.params;
+    const { categoryId } = req?.body;
+    const subCategory = await SubCategory.findById(id);
+
+    if (!subCategory) {
+      return res.status(400).json({
+        success: false,
+        error: "Sub Category not found!",
+      });
+    }
+
+    await SubCategory.deleteOne({ _id: id });
+    await Categories.updateOne(
+      { _id: categoryId },
+      { $pull: { subCategories: id } }
+    );
+
+    if (subCategory?.subSubCategories?.length > 0) {
+      await SubSubCategory.deleteMany({
+        _id: { $in: subCategory.subSubCategories },
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      error: "Sub Category delete success",
+    });
+  } catch (error) {
+    res.status(400).json({
+      success: false,
+      error: error.message,
+    });
+  }
+};
+
 // ---------------------------------------------------------------------------------------------------------
 // Sub SubCategory
 // ---------------------------------------------------------------------------------------------------------
 
 exports.addSubSubCategory = async (req, res) => {
   try {
-    const { name, subcategorySlug } = req.body;
+    const { name, category, subCategory, subCategoryId } = req.body;
     const sub_subCategory = {
       name,
-      slug: slugify(`${subcategorySlug}-${name}`),
+      category,
+      subCategory,
+      slug: slugify(`${name}-${Date.now()}`),
     };
 
     const result = await SubSubCategory.create(sub_subCategory);
     await SubCategory.updateOne(
-      { slug: subcategorySlug },
+      { _id: subCategoryId },
       { $push: { subSubCategories: result?._id } }
     );
 
@@ -213,6 +309,65 @@ exports.addSubSubCategory = async (req, res) => {
       success: true,
       message: "Sub SubCategory created success",
       data: result,
+    });
+  } catch (error) {
+    res.status(400).json({
+      success: false,
+      error: error.message,
+    });
+  }
+};
+
+exports.updateSubSubCategory = async (req, res) => {
+  try {
+    const { id } = req?.params;
+    const { name } = req?.body;
+
+    const subSubCategory = await SubSubCategory.findById(id);
+
+    if (!subSubCategory) {
+      return res.status(400).json({
+        success: false,
+        error: "Sub Sub Category not found",
+      });
+    }
+
+    await SubSubCategory.updateOne({ _id: id }, { name: name });
+
+    res.status(200).json({
+      success: true,
+      message: "Sub Sub Category updated success",
+    });
+  } catch (error) {
+    res.status(400).json({
+      success: false,
+      error: error.message,
+    });
+  }
+};
+
+exports.deleteSubSubCategory = async (req, res) => {
+  try {
+    const { id } = req?.params;
+    const { subCategiryId } = req?.body;
+    const subSubCategory = await SubSubCategory.findById(id);
+
+    if (!subSubCategory) {
+      return res.status(400).json({
+        success: false,
+        error: "Sub SubCategory not found!",
+      });
+    }
+
+    await SubSubCategory.deleteOne({ _id: id });
+    await SubCategory.updateOne(
+      { _id: subCategiryId },
+      { $pull: { subSubCategories: id } }
+    );
+
+    res.status(200).json({
+      success: true,
+      error: "Sub SubCategory delete success",
     });
   } catch (error) {
     res.status(400).json({
