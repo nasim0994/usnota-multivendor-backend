@@ -11,14 +11,16 @@ const CategoriesSchema = new mongoose.Schema(
       required: true,
       unique: true,
     },
-    order: {
-      type: Number,
-      required: true,
-    },
     icon: {
       type: String,
       required: true,
     },
+    subCategories: [
+      {
+        type: mongoose.Types.ObjectId,
+        ref: "SubCategory",
+      },
+    ],
   },
   { timestamps: false }
 );

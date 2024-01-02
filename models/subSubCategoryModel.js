@@ -11,14 +11,6 @@ const SubSubCategorySchema = new mongoose.Schema(
       required: true,
       unique: true,
     },
-    order: {
-      type: Number,
-      required: true,
-    },
-    category: {
-      type: String,
-      required: true,
-    },
   },
   { timestamps: false }
 );

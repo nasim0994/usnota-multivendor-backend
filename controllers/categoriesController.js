@@ -37,7 +37,13 @@ exports.addCategory = async (req, res) => {
 
 exports.getCategories = async (req, res) => {
   try {
-    let categories = await Categories.find({}).sort({ order: 1 });
+    let categories = await Categories.find({})
+      .sort({ order: 1 })
+      .populate({
+        path: "subCategories",
+        populate: { path: "subSubCategories", select: "name slug" },
+        select: "name slug",
+      });
 
     res.status(200).json({
       success: true,
@@ -79,7 +85,6 @@ exports.updateCategory = async (req, res) => {
 
     const category = await Categories.findById(id);
     const categoryIcon = category?.icon;
-
 
     let categoryData;
 
@@ -155,22 +160,23 @@ exports.deleteCategory = async (req, res) => {
   }
 };
 
-
 // ---------------------------------------------------------------------------------------------------------
 // Sub category
 // ---------------------------------------------------------------------------------------------------------
 
-exports.addSubCategory = async(req,res) => {
+exports.addSubCategory = async (req, res) => {
   try {
-    const { name, order, category } = req.body;
+    const { name, categorySlug } = req.body;
     const sub_category = {
       name,
-      order,
-      category,
-      slug: slugify(name),
+      slug: slugify(`${categorySlug}-${name}`),
     };
 
     const result = await SubCategory.create(sub_category);
+    await Categories.updateOne(
+      { slug: categorySlug },
+      { $push: { subCategories: result?._id } }
+    );
 
     res.status(200).json({
       success: true,
@@ -183,8 +189,35 @@ exports.addSubCategory = async(req,res) => {
       error: error.message,
     });
   }
-}
+};
 
 // ---------------------------------------------------------------------------------------------------------
 // Sub SubCategory
 // ---------------------------------------------------------------------------------------------------------
+
+exports.addSubSubCategory = async (req, res) => {
+  try {
+    const { name, subcategorySlug } = req.body;
+    const sub_subCategory = {
+      name,
+      slug: slugify(`${subcategorySlug}-${name}`),
+    };
+
+    const result = await SubSubCategory.create(sub_subCategory);
+    await SubCategory.updateOne(
+      { slug: subcategorySlug },
+      { $push: { subSubCategories: result?._id } }
+    );
+
+    res.status(200).json({
+      success: true,
+      message: "Sub SubCategory created success",
+      data: result,
+    });
+  } catch (error) {
+    res.status(400).json({
+      success: false,
+      error: error.message,
+    });
+  }
+};
