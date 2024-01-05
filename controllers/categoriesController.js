@@ -314,7 +314,8 @@ exports.getSubCategoryById = async (req, res) => {
     const { id } = req.params;
 
     const subCategory = await SubCategory.findOne({ _id: id }).populate(
-      "category"
+      "category subSubCategories",
+      "name slug icon"
     );
 
     res.status(200).json({

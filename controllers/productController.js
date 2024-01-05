@@ -7,35 +7,31 @@ const { pick } = require("../utils/pick");
 exports.addProduct = async (req, res) => {
   const images = req?.files?.map((file) => file.filename);
 
-  if (images.length < 1) {
+  if (images?.length < 1) {
     return res.status(400).json({
       success: false,
       error: "Please upload at least one image",
     });
   }
 
-  const { title, varients, colors, sizes } = req?.body;
-
-  const slug = slugify(`${title}-${Date.now()}`);
+  const { title, variants } = req?.body;
 
   const product = {
     ...req?.body,
+    slug: slugify(`${title}-${Date.now()}`),
     images,
-    slug: slug,
-    varients: JSON.parse(varients),
-    colors: JSON.parse(colors),
-    sizes: JSON.parse(sizes),
+    variants: variants && JSON.parse(variants),
   };
 
   try {
     const result = await Product.create(product);
-    res.status(201).json({
+    res.status(200).json({
       success: true,
       message: "Product added successfully",
       data: result,
     });
   } catch (error) {
-    if (images.length > 0) {
+    if (images?.length > 0) {
       images.forEach((imagePath) => {
         const fullPath = `./uploads/products/${imagePath}`;
         fs.unlink(fullPath, (err) => {
@@ -73,7 +69,8 @@ exports.getAllProducts = async (req, res) => {
     const result = await Product.find(whereCondition)
       .skip(skip)
       .limit(limit)
-      .lean();
+      .lean()
+      .populate("category subCategory subSubCategory", "name slug icon");
 
     const total = await Product.countDocuments(whereCondition);
 
@@ -86,13 +83,13 @@ exports.getAllProducts = async (req, res) => {
 
     res.status(200).json({
       success: true,
-      message: "All products",
-      data: result,
+      message: "All products get success",
       meta: {
         total,
         page,
         limit,
       },
+      data: result,
     });
   } catch (error) {
     res.status(500).json({
@@ -128,7 +125,10 @@ exports.getProductById = async (req, res) => {
 
 exports.getProductBySlug = async (req, res) => {
   try {
-    const result = await Product.findOne({ slug: req?.params?.slug });
+    const result = await Product.findOne({ slug: req?.params?.slug }).populate(
+      "category subCategory subSubCategory",
+      "name slug icon"
+    );
 
     if (!result) {
       return res.status(404).json({
