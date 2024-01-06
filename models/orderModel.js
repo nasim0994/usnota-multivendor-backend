@@ -39,10 +39,19 @@ const OrderSchema = new mongoose.Schema(
         required: true,
       },
     },
+    paymentMethod: {
+      type: String,
+      enum: ["cod", "ssl", "amar_pay"],
+      required: true,
+    },
+    invoiceNumber: {
+      type: String,
+      required: true,
+    },
     totalPrice: {
       type: Number,
       required: true,
-    }, 
+    },
     products: [productSchema],
     status: {
       type: String,

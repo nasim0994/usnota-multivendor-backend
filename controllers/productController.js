@@ -51,46 +51,54 @@ exports.addProduct = async (req, res) => {
 
 exports.getAllProducts = async (req, res) => {
   const paginationOptions = pick(req.query, ["page", "limit"]);
-  const filters = pick(req.query, ["category"]);
+  const filters = pick(req.query, [
+    "category",
+    "subCategory",
+    "subSubCategory",
+  ]);
 
   const { page, limit, skip } = calculatePagination(paginationOptions);
-  const { category } = filters;
+  const { category, subCategory, subSubCategory } = filters;
 
   try {
-    const andCondition = [];
+     const result = await Product.find()
+       .skip(skip)
+       .limit(limit)
+       .lean()
+       .populate("category subCategory subSubCategory", "name slug icon");
 
-    if (category && category !== undefined) {
-      andCondition.push({ category: category });
-    }
+       let products = result;
 
-    const whereCondition =
-      andCondition.length > 0 ? { $and: andCondition } : {};
+       if (category) {
+         products = products.filter(
+           (product) => product?.category?.slug === category
+         );
+       }
 
-    const result = await Product.find(whereCondition)
-      .skip(skip)
-      .limit(limit)
-      .lean()
-      .populate("category subCategory subSubCategory", "name slug icon");
+       if (subCategory) {
+         products = products.filter(
+           (product) => product?.subCategory?.slug === subCategory
+         );
+       }
 
-    const total = await Product.countDocuments(whereCondition);
+       if (subSubCategory) {
+         products = products.filter(
+           (product) => product?.subSubCategory?.slug === subSubCategory
+         );
+       }
 
-    if (!result) {
-      return res.status(404).json({
-        success: false,
-        message: "No products found",
-      });
-    }
+    const total = products.length;
 
-    res.status(200).json({
-      success: true,
-      message: "All products get success",
-      meta: {
-        total,
-        page,
-        limit,
-      },
-      data: result,
-    });
+   res.status(200).json({
+     success: true,
+     message: "Products fetched successfully",
+     meta: {
+       total,
+       page,
+       limit,
+     },
+     data: products,
+   });
   } catch (error) {
     res.status(500).json({
       success: false,

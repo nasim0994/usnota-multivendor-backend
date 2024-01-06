@@ -2,44 +2,101 @@ const Order = require("../models/orderModel");
 const Product = require("../models/productModel");
 const { calculatePagination } = require("../utils/calculatePagination");
 const { pick } = require("../utils/pick");
+const moment = require("moment");
 
 exports.addOrder = async (req, res) => {
   const data = req?.body;
 
+  const invoiceNumber = `INV-${moment().format("YYYYMMDDHHmmss")}-${Math.floor(
+    Math.random() * 1000
+  )}`;
+
+  const orderData = {
+    ...data,
+    invoiceNumber,
+  };
+
   try {
-    const result = await Order.create(data);
+    const result = await Order.create(orderData);
+    // console.log(result);
 
-    // data?.products?.forEach(async (product) => {
-    //   const { productId, quantity, size, color } = product;
+    result?.products?.forEach(async (product) => {
+      const { productId, quantity, color, size } = product;
 
-    //   const selectedProduct = await Product.findOne({
-    //     _id: productId,
-    //   });
+      const selectedProduct = await Product.findOne({
+        _id: productId,
+      });
+      // console.log(selectedProduct);
 
-    //   const selectedColorVarient = selectedProduct?.varients?.find(
-    //     (varient) => varient.color === color
-    //   );
+      if (color && size) {
+        const selectedVariant = selectedProduct?.variants?.find(
+          (variant) => variant.color === color && variant.size === size
+        );
 
-    //   const selectedSizeVarient = selectedColorVarient?.info?.find(
-    //     (varient) => varient.size === size
-    //   );
+        // console.log(selectedVariant, "color & size");
+        const updatedQuantity = selectedVariant?.quantity - quantity;
 
-    //   // Calculate the updated quantity
-    //   const updatedQuantity = selectedSizeVarient.quantity - parseInt(quantity);
+        await Product.findByIdAndUpdate(
+          productId,
+          {
+            $set: {
+              variants: [
+                ...selectedProduct?.variants?.map((variant) => {
+                  if (variant.color === color && variant.size === size) {
+                    return {
+                      ...variant,
+                      quantity: updatedQuantity,
+                    };
+                  }
+                  return variant;
+                }),
+              ],
+            },
+          },
+          { new: true }
+        );
+      } else if (color) {
+        const selectedVariant = selectedProduct?.variants?.find(
+          (variant) => variant.color === color
+        );
 
-    //   // Update the quantity in the database
-    //   await Product.findOneAndUpdate(
-    //     {
-    //       _id: productId,
-    //       "varients.color": color,
-    //       "varients.info.size": size,
-    //     },
-    //     { $set: { "varients.$.info.$[elem].quantity": updatedQuantity } },
-    //     {
-    //       new: true,
-    //     }
-    //   );
-    // });
+        // console.log(selectedVariant, "color");
+        const updatedQuantity = selectedVariant?.quantity - quantity;
+
+        await Product.findByIdAndUpdate(
+          productId,
+          {
+            $set: {
+              variants: [
+                ...selectedProduct?.variants?.map((variant) => {
+                  if (variant.color === color) {
+                    return {
+                      ...variant,
+                      quantity: updatedQuantity,
+                    };
+                  }
+                  return variant;
+                }),
+              ],
+            },
+          },
+          { new: true }
+        );
+      } else {
+        const updatedQuantity = selectedProduct?.quantity - quantity;
+        // console.log(selectedProduct?.quantity, "quantity");
+
+        await Product.findByIdAndUpdate(
+          productId,
+          {
+            $set: {
+              quantity: updatedQuantity,
+            },
+          },
+          { new: true }
+        );
+      }
+    });
 
     res.status(201).json({
       success: true,
