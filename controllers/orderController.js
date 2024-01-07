@@ -2,7 +2,9 @@ const Order = require("../models/orderModel");
 const Product = require("../models/productModel");
 const { calculatePagination } = require("../utils/calculatePagination");
 const { pick } = require("../utils/pick");
-const moment = require("moment");
+const axios = require("axios");
+const User = require("../models/userModel");
+const { v4: uuidv4 } = require("uuid");
 
 exports.addOrder = async (req, res) => {
   const data = req?.body;
@@ -240,6 +242,25 @@ exports.updateStatus = async (req, res) => {
       success: true,
       message: "Order status updated successfully",
       data: result,
+    });
+  } catch (error) {
+    res.status(400).json({
+      success: false,
+      error: error.message,
+    });
+  }
+};
+
+exports.getOrderByTransactionId = async (req, res) => {
+  const transactionId = req?.params?.transactionId;
+
+  try {
+    const order = await Order.findOne({ transactionId });
+
+    res.status(200).json({
+      success: true,
+      message: "Order fetched successfully",
+      data: order,
     });
   } catch (error) {
     res.status(400).json({
