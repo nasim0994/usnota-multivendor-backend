@@ -61,44 +61,44 @@ exports.getAllProducts = async (req, res) => {
   const { category, subCategory, subSubCategory } = filters;
 
   try {
-     const result = await Product.find()
-       .skip(skip)
-       .limit(limit)
-       .lean()
-       .populate("category subCategory subSubCategory", "name slug icon");
+    const result = await Product.find()
+      .skip(skip)
+      .limit(limit)
+      .lean()
+      .populate("category subCategory subSubCategory", "name slug icon");
 
-       let products = result;
+    let products = result;
 
-       if (category) {
-         products = products.filter(
-           (product) => product?.category?.slug === category
-         );
-       }
+    if (category) {
+      products = products.filter(
+        (product) => product?.category?.slug === category
+      );
+    }
 
-       if (subCategory) {
-         products = products.filter(
-           (product) => product?.subCategory?.slug === subCategory
-         );
-       }
+    if (subCategory) {
+      products = products.filter(
+        (product) => product?.subCategory?.slug === subCategory
+      );
+    }
 
-       if (subSubCategory) {
-         products = products.filter(
-           (product) => product?.subSubCategory?.slug === subSubCategory
-         );
-       }
+    if (subSubCategory) {
+      products = products.filter(
+        (product) => product?.subSubCategory?.slug === subSubCategory
+      );
+    }
 
     const total = products.length;
 
-   res.status(200).json({
-     success: true,
-     message: "Products fetched successfully",
-     meta: {
-       total,
-       page,
-       limit,
-     },
-     data: products,
-   });
+    res.status(200).json({
+      success: true,
+      message: "Products fetched successfully",
+      meta: {
+        total,
+        page,
+        limit,
+      },
+      data: products,
+    });
   } catch (error) {
     res.status(500).json({
       success: false,
@@ -109,7 +109,9 @@ exports.getAllProducts = async (req, res) => {
 
 exports.getProductById = async (req, res) => {
   try {
-    const result = await Product.findById(req?.params?.id);
+    const result = await Product.findById(req?.params?.id).populate(
+      "category subCategory subSubCategory"
+    );
 
     if (!result) {
       return res.status(404).json({
@@ -198,85 +200,81 @@ exports.updateProduct = async (req, res) => {
   const id = req?.params?.id;
   const images = req?.files?.map((file) => file.filename);
 
-  const { title, varients, colors, sizes } = req?.body;
+  const { title, variants } = req?.body;
 
   const slug = slugify(`${title}-${Date.now()}`);
 
-  try {
-    const isProduct = await Product.findById(id);
-    if (!isProduct) {
-      images?.forEach((imagePath) => {
-        const fullPath = `./uploads/products/${imagePath}`;
-        fs.unlink(fullPath, (err) => {
-          if (err) {
-            console.error(err);
-          }
-        });
-      });
+  // try {
+  //   const isProduct = await Product.findById(id);
+  //   if (!isProduct) {
+  //     images?.forEach((imagePath) => {
+  //       const fullPath = `./uploads/products/${imagePath}`;
+  //       fs.unlink(fullPath, (err) => {
+  //         if (err) {
+  //           console.error(err);
+  //         }
+  //       });
+  //     });
 
-      return res.status(404).json({
-        success: false,
-        message: "Product not found",
-      });
-    }
+  //     return res.status(404).json({
+  //       success: false,
+  //       message: "Product not found",
+  //     });
+  //   }
 
-    if (images) {
-      const product = {
-        ...req?.body,
-        images,
-        slug: slug,
-        varients: JSON.parse(varients),
-        colors: JSON.parse(colors),
-        sizes: JSON.parse(sizes),
-      };
+  //   if (images) {
+  //     const product = {
+  //       ...req?.body,
+  //       slug: slug,
+  //       images,
+  //       varients: variants && JSON.parse(variants),
+  //     };
 
-      const imagePaths = isProduct?.images;
-      imagePaths.forEach((imagePath) => {
-        const fullPath = `./uploads/products/${imagePath}`;
-        fs.unlink(fullPath, (err) => {
-          if (err) {
-            console.error(err);
-          }
-        });
-      });
+  //     const imagePaths = isProduct?.images;
+  //     imagePaths.forEach((imagePath) => {
+  //       const fullPath = `./uploads/products/${imagePath}`;
+  //       fs.unlink(fullPath, (err) => {
+  //         if (err) {
+  //           console.error(err);
+  //         }
+  //       });
+  //     });
 
-      await Product.findByIdAndUpdate(id, product, {
-        new: true,
-      });
-    } else {
-      const product = {
-        ...req?.body,
-        images: isProduct.images,
-        slug: slug,
-        varients: JSON.parse(varients),
-        colors: JSON.parse(colors),
-        sizes: JSON.parse(sizes),
-      };
+  //     await Product.findByIdAndUpdate(id, product, {
+  //       new: true,
+  //     });
+  //   } else {
+  //     const product = {
+  //       ...req?.body,
+  //       images: isProduct.images,
+  //       slug: slug,
+  //       varients: variants && JSON.parse(variants),
+  //     };
 
-      await Product.findByIdAndUpdate(id, product, {
-        new: true,
-      });
-    }
+  //     await Product.findByIdAndUpdate(id, product, {
+  //       new: true,
+  //     });
+  //   }
 
-    res.status(200).json({
-      success: true,
-      message: "Product updated successfully",
-    });
-  } catch (error) {
-    if (images.length > 0) {
-      images.forEach((imagePath) => {
-        const fullPath = `./uploads/products/${imagePath}`;
-        fs.unlink(fullPath, (err) => {
-          if (err) {
-            console.error(err);
-          }
-        });
-      });
-    }
+  //   res.status(200).json({
+  //     success: true,
+  //     message: "Product updated successfully",
+  //   });
+  // } catch (error) {
+  //   if (images.length > 0) {
+  //     images.forEach((imagePath) => {
+  //       const fullPath = `./uploads/products/${imagePath}`;
+  //       fs.unlink(fullPath, (err) => {
+  //         if (err) {
+  //           console.error(err);
+  //         }
+  //       });
+  //     });
+  //   }
 
-    res.status(500).json({
-      success: false,
-      error: error.message,
-    });
-  }
+  //   res.status(500).json({
+  //     success: false,
+  //     error: error.message,
+  //   });
+  // }
 };

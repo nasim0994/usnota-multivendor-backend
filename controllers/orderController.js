@@ -7,16 +7,38 @@ const moment = require("moment");
 exports.addOrder = async (req, res) => {
   const data = req?.body;
 
-  const invoiceNumber = `INV-${moment().format("YYYYMMDDHHmmss")}-${Math.floor(
-    Math.random() * 1000
-  )}`;
+  // const invoiceNumber = `INV-${moment().format("YYYYMMDDHHmmss")}-${Math.floor(
+  //   Math.random() * 1000
+  // )}`;
 
-  const orderData = {
-    ...data,
-    invoiceNumber,
-  };
+  let invoiceNumber = "00001";
 
   try {
+    const orders = await Order.find({});
+
+    if (orders?.length > 0) {
+      orders?.map((order) => {
+        const newNumber = Math.max(parseInt(order?.invoiceNumber)) + 1;
+
+        if (newNumber < 10) {
+          invoiceNumber = "0000" + newNumber;
+        } else if (newNumber < 100) {
+          invoiceNumber = "000" + newNumber;
+        } else if (newNumber < 1000) {
+          invoiceNumber = "00" + newNumber;
+        } else if (newNumber < 10000) {
+          invoiceNumber = "0" + newNumber;
+        } else {
+          invoiceNumber = newNumber;
+        }
+      });
+    }
+
+    const orderData = {
+      ...data,
+      invoiceNumber,
+    };
+
     const result = await Order.create(orderData);
     // console.log(result);
 

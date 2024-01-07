@@ -41,12 +41,12 @@ const OrderSchema = new mongoose.Schema(
     },
     paymentMethod: {
       type: String,
-      enum: ["cod", "ssl", "amar_pay"],
       required: true,
     },
     invoiceNumber: {
       type: String,
       required: true,
+      unique: true,
     },
     totalPrice: {
       type: Number,
