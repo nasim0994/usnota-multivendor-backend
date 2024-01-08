@@ -2,13 +2,16 @@ const fs = require("fs");
 const Logo = require("../models/logoModel");
 
 exports.addLogo = async (req, res) => {
+  const logo = req?.file?.filename;
   try {
-    const logo = {
-      logo: req?.file?.filename,
-    };
+    if (!logo) {
+      return res.status(404).json({
+        success: false,
+        error: "Logo is requred",
+      });
+    }
 
-    const result = await Logo.create(logo);
-    console.log(result);
+    const result = await Logo.create({ logo: logo });
 
     if (!result) {
       return res.status(404).json({
