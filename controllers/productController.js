@@ -202,81 +202,79 @@ exports.updateProduct = async (req, res) => {
 
   const { title, variants } = req?.body;
 
-  const slug = slugify(`${title}-${Date.now()}`);
+  try {
+    const isProduct = await Product.findById(id);
+    if (!isProduct) {
+      images?.forEach((imagePath) => {
+        const fullPath = `./uploads/products/${imagePath}`;
+        fs.unlink(fullPath, (err) => {
+          if (err) {
+            console.error(err);
+          }
+        });
+      });
 
-  // try {
-  //   const isProduct = await Product.findById(id);
-  //   if (!isProduct) {
-  //     images?.forEach((imagePath) => {
-  //       const fullPath = `./uploads/products/${imagePath}`;
-  //       fs.unlink(fullPath, (err) => {
-  //         if (err) {
-  //           console.error(err);
-  //         }
-  //       });
-  //     });
+      return res.status(404).json({
+        success: false,
+        message: "Product not found",
+      });
+    }
 
-  //     return res.status(404).json({
-  //       success: false,
-  //       message: "Product not found",
-  //     });
-  //   }
+    if (images) {
+      const product = {
+        ...req?.body,
+        slug: slugify(`${title}-${Date.now()}`),
+        images,
+        variants: variants && JSON.parse(variants),
+      };
 
-  //   if (images) {
-  //     const product = {
-  //       ...req?.body,
-  //       slug: slug,
-  //       images,
-  //       varients: variants && JSON.parse(variants),
-  //     };
+      const imagePaths = isProduct?.images;
+      imagePaths.forEach((imagePath) => {
+        const fullPath = `./uploads/products/${imagePath}`;
+        fs.unlink(fullPath, (err) => {
+          if (err) {
+            console.error(err);
+          }
+        });
+      });
 
-  //     const imagePaths = isProduct?.images;
-  //     imagePaths.forEach((imagePath) => {
-  //       const fullPath = `./uploads/products/${imagePath}`;
-  //       fs.unlink(fullPath, (err) => {
-  //         if (err) {
-  //           console.error(err);
-  //         }
-  //       });
-  //     });
+      await Product.findByIdAndUpdate(id, product, {
+        new: true,
+      });
+    } else {
+      const product = {
+        ...req?.body,
+        images: isProduct.images,
+        slug: slugify(`${title}-${Date.now()}`),
+        varients: variants && JSON.parse(variants),
+      };
 
-  //     await Product.findByIdAndUpdate(id, product, {
-  //       new: true,
-  //     });
-  //   } else {
-  //     const product = {
-  //       ...req?.body,
-  //       images: isProduct.images,
-  //       slug: slug,
-  //       varients: variants && JSON.parse(variants),
-  //     };
+      await Product.findByIdAndUpdate(id, product, {
+        new: true,
+      });
+    }
 
-  //     await Product.findByIdAndUpdate(id, product, {
-  //       new: true,
-  //     });
-  //   }
+    res.status(200).json({
+      success: true,
+      message: "Product updated successfully",
+    });
+  } catch (error) {
+    if (images.length > 0) {
+      images.forEach((imagePath) => {
+        const fullPath = `./uploads/products/${imagePath}`;
+        fs.unlink(fullPath, (err) => {
+          if (err) {
+            console.error(err);
+          }
+        });
+      });
+    }
 
-  //   res.status(200).json({
-  //     success: true,
-  //     message: "Product updated successfully",
-  //   });
-  // } catch (error) {
-  //   if (images.length > 0) {
-  //     images.forEach((imagePath) => {
-  //       const fullPath = `./uploads/products/${imagePath}`;
-  //       fs.unlink(fullPath, (err) => {
-  //         if (err) {
-  //           console.error(err);
-  //         }
-  //       });
-  //     });
-  //   }
-
-  //   res.status(500).json({
-  //     success: false,
-  //     error: error.message,
-  //   });
-  // }
+    res.status(500).json({
+      success: false,
+      error: error.message,
+    });
+  }
 };
 
 // get Flash products
