@@ -278,3 +278,23 @@ exports.updateProduct = async (req, res) => {
   //   });
   // }
 };
+
+// get Flash products
+exports.getFlashProducts = async (req, res) => {
+  try {
+    const products = await Product.find({ discount: { $gt: 10 } })
+      .limit(5)
+      .populate("category subCategory subSubCategory", "name slug icon");
+
+    res.status(200).json({
+      success: true,
+      message: "Products fetched successfully",
+      data: products,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: error.message,
+    });
+  }
+};

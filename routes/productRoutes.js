@@ -7,6 +7,7 @@ const {
   getProductBySlug,
   deleteProductById,
   updateProduct,
+  getFlashProducts,
 } = require("../controllers/productController");
 
 const storage = multer.diskStorage({
@@ -21,6 +22,8 @@ const upload = multer({ storage: storage }).array("images", 5);
 
 router.post("/add-product", upload, addProduct);
 router.get("/all-products", getAllProducts);
+router.get("/flash-products", getFlashProducts);
+
 router.get("/:id", getProductById);
 router.get("/getbyslug/:slug", getProductBySlug);
 router.patch("/update-product/:id", upload, updateProduct);
