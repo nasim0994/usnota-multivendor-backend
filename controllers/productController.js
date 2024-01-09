@@ -204,6 +204,7 @@ exports.updateProduct = async (req, res) => {
 
   try {
     const isProduct = await Product.findById(id);
+    // console.log(isProduct);
     if (!isProduct) {
       images?.forEach((imagePath) => {
         const fullPath = `./uploads/products/${imagePath}`;
@@ -220,12 +221,12 @@ exports.updateProduct = async (req, res) => {
       });
     }
 
-    if (images) {
+    if (images && images.length > 0) {
       const product = {
         ...req?.body,
         slug: slugify(`${title}-${Date.now()}`),
         images,
-        variants: variants && JSON.parse(variants),
+        variants: JSON.parse(variants),
       };
 
       const imagePaths = isProduct?.images;
@@ -244,9 +245,9 @@ exports.updateProduct = async (req, res) => {
     } else {
       const product = {
         ...req?.body,
-        images: isProduct.images,
+        images: isProduct?.images,
         slug: slugify(`${title}-${Date.now()}`),
-        varients: variants && JSON.parse(variants),
+        variants: JSON.parse(variants),
       };
 
       await Product.findByIdAndUpdate(id, product, {
