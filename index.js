@@ -13,6 +13,7 @@ const bannerRouter = require("./routes/bannerRoutes");
 const aboutRouter = require("./routes/aboutRoutes");
 const categoryRouter = require("./routes/categoriesRoutes");
 const productRouter = require("./routes/productRoutes");
+const reviewRouter = require("./routes/reveiwRoutes");
 
 const orderRouter = require("./routes/orderRoutes");
 const paymentRouter = require("./routes/paymentRoute");
@@ -35,6 +36,7 @@ app.use("/banner", bannerRouter);
 app.use("/about", aboutRouter);
 app.use("/category", categoryRouter);
 app.use("/product", productRouter);
+app.use("/review", reviewRouter);
 
 app.use("/order", orderRouter);
 app.use("/payment", paymentRouter);

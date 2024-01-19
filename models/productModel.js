@@ -50,6 +50,14 @@ const productSchema = new mongoose.Schema({
   variants: {
     type: Array,
   },
+  rating : {
+    type: Number,
+    default: 0,
+  },
+  reviewer : {
+    type: Number,
+    default: 0,
+  },
 });
 
 const Product = mongoose.model("Product", productSchema);
