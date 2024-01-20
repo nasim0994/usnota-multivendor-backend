@@ -71,7 +71,6 @@ exports.updateAboutUs = async (req, res) => {
       fs.unlink(`./uploads/aboutus${isExist.image}`, (err) => {
         if (err) {
           console.log(err);
-          return;
         }
       });
 

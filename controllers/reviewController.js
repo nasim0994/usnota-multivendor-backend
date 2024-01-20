@@ -2,6 +2,8 @@ const Review = require("../models/reviewModel");
 const Product = require("../models/productModel");
 const User = require("../models/userModel");
 const mongoose = require("mongoose");
+const { pick } = require("../utils/pick");
+const { calculatePagination } = require("../utils/calculatePagination");
 
 exports.addReview = async (req, res) => {
   const { product: productId, rating, user: userId } = req?.body;
@@ -188,15 +190,28 @@ exports.updateReview = async (req, res) => {
 };
 
 exports.getReviewsByProductId = async (req, res) => {
+  const paginationOptions = pick(req.query, ["page", "limit"]);
   const { productId } = req.params;
 
+  const { page, limit, skip } = calculatePagination(paginationOptions);
+
   try {
-    const reviews = await Review.find({ product: productId }).populate("user");
+    const reviews = await Review.find({ product: productId })
+      .populate("user")
+      .skip(skip)
+      .limit(limit);
+
+    const total = await Review.countDocuments({ product: productId });
 
     res.status(200).json({
       success: true,
       message: "Reviews fetched successfully",
       data: reviews,
+      meta: {
+        page,
+        limit,
+        total,
+      },
     });
   } catch (error) {
     res.status(400).json({
@@ -225,11 +240,90 @@ exports.getReviewById = async (req, res) => {
   }
 };
 
+exports.getReviewsByUserId = async (req, res) => {
+  const paginationOptions = pick(req.query, ["page", "limit"]);
+  const { userId } = req.params;
+
+  const { page, limit, skip } = calculatePagination(paginationOptions);
+
+  try {
+    const reviews = await Review.find({ user: userId })
+      .populate("user")
+      .skip(skip)
+      .limit(limit);
+
+    const total = await Review.countDocuments({ user: userId });
+
+    res.status(200).json({
+      success: true,
+      message: "Reviews fetched successfully",
+      data: reviews,
+      meta: {
+        total,
+        page,
+        limit,
+      },
+    });
+  } catch (error) {
+    res.status(400).json({
+      success: false,
+      error: error,
+    });
+  }
+};
+
+exports.getAllReviews = async (req, res) => {
+  const paginationOptions = pick(req.query, ["page", "limit"]);
+  const filters = pick(req.query, ["description"]);
+
+  const { page, limit, skip } = calculatePagination(paginationOptions);
+  const { description } = filters;
+
+  try {
+    const andCondition = [];
+
+    if (description) {
+      andCondition.push({
+        description: {
+          $regex: description,
+          $options: "i",
+        },
+      });
+    }
+
+    const whereCondition = andCondition.length ? { $and: andCondition } : {};
+
+    const reviews = await Review.find(whereCondition)
+      .populate("user")
+      .skip(skip)
+      .limit(limit);
+
+    const total = await Review.countDocuments(whereCondition);
+
+    res.status(200).json({
+      success: true,
+      message: "Reviews fetched successfully",
+      data: reviews,
+      meta: {
+        total,
+        page,
+        limit,
+      },
+    });
+  } catch (error) {
+    res.status(400).json({
+      success: false,
+      error: error,
+    });
+  }
+};
+
 exports.deleteReview = async (req, res) => {
   const { id } = req.params;
   const { user: userId } = req.body;
 
   try {
+    const user = await User.findById(userId);
     const review = await Review.findById(id);
 
     if (!review) {
@@ -239,7 +333,7 @@ exports.deleteReview = async (req, res) => {
       });
     }
 
-    if (review.user.toString() !== userId) {
+    if (review.user.toString() !== userId && user?.role !== "admin") {
       return res.status(400).json({
         success: false,
         error: "You are not authorized to delete this review",
