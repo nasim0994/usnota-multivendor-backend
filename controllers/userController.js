@@ -104,7 +104,6 @@ exports.updateImage = async (req, res) => {
       fs.unlink(`./uploads/user/${uploadedImage}`, (err) => {
         if (err) {
           console.log(err);
-          return;
         }
       });
     }
@@ -209,7 +208,6 @@ exports.deleteAnUser = async (req, res) => {
       fs.unlink(`./uploads/user/${isExist?.image}`, (err) => {
         if (err) {
           console.log(err);
-          return;
         }
       });
     }
