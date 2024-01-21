@@ -1,4 +1,5 @@
 const CampaignBanner = require("../models/campaignBannerModel");
+const fs = require("fs");
 
 exports.addCampaignBanner = async (req, res) => {
   const data = req.body;
@@ -85,7 +86,7 @@ exports.updateCampaignBanner = async (req, res) => {
 
     let newData;
     if (image) {
-      fs.unlink(`./uploads/campaignbanner${campaignBanner?.image}`, (err) => {
+      fs.unlink(`./uploads/campaignBanner${campaignBanner?.image}`, (err) => {
         if (err) {
           console.log(err);
         }
@@ -124,7 +125,6 @@ exports.deleteCampaignBanner = async (req, res) => {
 
   try {
     const campaignBanner = await CampaignBanner.findById(id);
-
     if (!campaignBanner) {
       return res.status(400).json({
         success: false,
@@ -134,7 +134,7 @@ exports.deleteCampaignBanner = async (req, res) => {
 
     await CampaignBanner.findByIdAndDelete(id);
 
-    fs.unlink(`./uploads/campaignbanner${campaignBanner?.image}`, (err) => {
+    fs.unlink(`./uploads/campaignBanner/${campaignBanner?.image}`, (err) => {
       if (err) {
         console.log(err);
       }
@@ -144,6 +144,7 @@ exports.deleteCampaignBanner = async (req, res) => {
       success: true,
       message: "Campaign Banner deleted successfully",
     });
+    
   } catch (error) {
     res.status(400).json({
       success: false,

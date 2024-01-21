@@ -5,7 +5,6 @@ const dotenv = require("dotenv").config();
 const port = process.env.port || 5001;
 
 // routers
-
 const userRoutes = require("./routes/userRoutes");
 const logoRouter = require("./routes/logoRoutes");
 const contactRouter = require("./routes/contactRoutes");
@@ -14,6 +13,7 @@ const aboutRouter = require("./routes/aboutRoutes");
 const categoryRouter = require("./routes/categoriesRoutes");
 const productRouter = require("./routes/productRoutes");
 const reviewRouter = require("./routes/reveiwRoutes");
+const campaignBannerRouter = require("./routes/campaignBannerRoutes");
 
 const orderRouter = require("./routes/orderRoutes");
 const paymentRouter = require("./routes/paymentRoute");
@@ -37,6 +37,7 @@ app.use("/about", aboutRouter);
 app.use("/category", categoryRouter);
 app.use("/product", productRouter);
 app.use("/review", reviewRouter);
+app.use("/campaignBanner", campaignBannerRouter);
 
 app.use("/order", orderRouter);
 app.use("/payment", paymentRouter);

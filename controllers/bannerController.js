@@ -54,7 +54,7 @@ exports.deleteBanner = async (req, res) => {
     const banner = await Banner.findOne({ _id: id });
 
     if (banner) {
-      fs.unlink(`./uploads/banner/${banner.image}`, (err) => {
+      fs.unlink(`./uploads/banner/${banner?.image}`, (err) => {
         if (err) {
           console.log(err);
         }
