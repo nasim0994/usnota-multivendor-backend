@@ -1,4 +1,7 @@
 const Product = require("../models/productModel");
+const Categories = require("../models/categoriesModel");
+const SubCategory = require("../models/subCategoryModel");
+const SubSubCategory = require("../models/subSubCategoryModel");
 const slugify = require("slugify");
 const fs = require("fs");
 const { calculatePagination } = require("../utils/calculatePagination");
@@ -51,49 +54,44 @@ exports.addProduct = async (req, res) => {
 
 exports.getAllProducts = async (req, res) => {
   const paginationOptions = pick(req.query, ["page", "limit"]);
-  const filters = pick(req.query, [
-    "category",
-    "subCategory",
-    "subSubCategory",
-  ]);
-
+  const { category, subCategory, subSubCategory } = req.query;
   const { page, limit, skip } = calculatePagination(paginationOptions);
-  const { category, subCategory, subSubCategory } = filters;
 
   try {
-    const result = await Product.find()
+    const targetedCategory = await Categories.findOne({
+      slug: category && JSON.parse(category),
+    });
+    const targetedSubCategory = await SubCategory.findOne({
+      slug: subCategory && JSON.parse(subCategory),
+    });
+    const targetedSubSubCategory = await SubSubCategory.findOne({
+      slug: subSubCategory && JSON.parse(subSubCategory),
+    });
+
+    const categoryId = targetedCategory?._id;
+    const subCategoryId = targetedSubCategory?._id;
+    const subSubategoryId = targetedSubSubCategory?._id;
+
+    let query = {};
+    if (category) query.category = categoryId;
+    if (subCategory) query.subCategory = subCategoryId;
+    if (subSubCategory) query.subSubCategory = subSubategoryId;
+
+    const products = await Product.find(query)
       .skip(skip)
       .limit(limit)
-      .lean()
+      .sort({ createdAt: -1 })
       .populate("category subCategory subSubCategory", "name slug icon");
 
-    let products = result;
-
-    if (category) {
-      products = products.filter(
-        (product) => product?.category?.slug === category
-      );
-    }
-
-    if (subCategory) {
-      products = products.filter(
-        (product) => product?.subCategory?.slug === subCategory
-      );
-    }
-
-    if (subSubCategory) {
-      products = products.filter(
-        (product) => product?.subSubCategory?.slug === subSubCategory
-      );
-    }
-
-    const total = products.length;
+    const total = await Product.countDocuments(query);
+    const pages = Math.ceil(parseInt(total) / parseInt(limit));
 
     res.status(200).json({
       success: true,
       message: "Products fetched successfully",
       meta: {
         total,
+        pages,
         page,
         limit,
       },
@@ -279,15 +277,16 @@ exports.updateProduct = async (req, res) => {
 };
 
 // get Flash products
-exports.getFlashProducts = async (req, res) => {
+exports.getFeaturedProducts = async (req, res) => {
   try {
-    const products = await Product.find({ discount: { $gt: 10 } })
-      .limit(5)
+    const products = await Product.find({ featured: true })
+      .limit(req.query.limit)
+      .sort({ createdAt: -1 })
       .populate("category subCategory subSubCategory", "name slug icon");
 
     res.status(200).json({
       success: true,
-      message: "Products fetched successfully",
+      message: "Featured Products fetched successfully",
       data: products,
     });
   } catch (error) {
