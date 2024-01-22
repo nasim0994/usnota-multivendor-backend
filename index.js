@@ -15,6 +15,7 @@ const productRouter = require("./routes/productRoutes");
 const reviewRouter = require("./routes/reveiwRoutes");
 const campaignBannerRouter = require("./routes/campaignBannerRoutes");
 const brandRouter = require("./routes/brandRoutes");
+const couponRouter = require("./routes/couponRoutes");
 
 const orderRouter = require("./routes/orderRoutes");
 const paymentRouter = require("./routes/paymentRoute");
@@ -40,6 +41,7 @@ app.use("/product", productRouter);
 app.use("/review", reviewRouter);
 app.use("/campaignBanner", campaignBannerRouter);
 app.use("/brand", brandRouter);
+app.use("/coupon", couponRouter);
 
 app.use("/order", orderRouter);
 app.use("/payment", paymentRouter);
