@@ -86,7 +86,7 @@ exports.updateCampaignBanner = async (req, res) => {
 
     let newData;
     if (image) {
-      fs.unlink(`./uploads/campaignBanner${campaignBanner?.image}`, (err) => {
+      fs.unlink(`./uploads/campaignBanner/${campaignBanner?.image}`, (err) => {
         if (err) {
           console.log(err);
         }
@@ -100,13 +100,9 @@ exports.updateCampaignBanner = async (req, res) => {
       newData = { ...data };
     }
 
-    await CampaignBanner.findByIdAndUpdate(
-      id,
-      newData,
-      {
-        new: true,
-      }
-    );
+    await CampaignBanner.findByIdAndUpdate(id, newData, {
+      new: true,
+    });
 
     res.status(200).json({
       success: true,
@@ -144,7 +140,6 @@ exports.deleteCampaignBanner = async (req, res) => {
       success: true,
       message: "Campaign Banner deleted successfully",
     });
-    
   } catch (error) {
     res.status(400).json({
       success: false,

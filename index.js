@@ -14,6 +14,7 @@ const categoryRouter = require("./routes/categoriesRoutes");
 const productRouter = require("./routes/productRoutes");
 const reviewRouter = require("./routes/reveiwRoutes");
 const campaignBannerRouter = require("./routes/campaignBannerRoutes");
+const brandRouter = require("./routes/brandRoutes");
 
 const orderRouter = require("./routes/orderRoutes");
 const paymentRouter = require("./routes/paymentRoute");
@@ -38,6 +39,7 @@ app.use("/category", categoryRouter);
 app.use("/product", productRouter);
 app.use("/review", reviewRouter);
 app.use("/campaignBanner", campaignBannerRouter);
+app.use("/brand", brandRouter);
 
 app.use("/order", orderRouter);
 app.use("/payment", paymentRouter);
