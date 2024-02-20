@@ -2,8 +2,8 @@ const fs = require("fs");
 const Logo = require("../models/logoModel");
 
 exports.addLogo = async (req, res) => {
-  const logo = req?.file?.filename;
   try {
+    const logo = req?.file?.filename;
     if (!logo) {
       return res.status(404).json({
         success: false,

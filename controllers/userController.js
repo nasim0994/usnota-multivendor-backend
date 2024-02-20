@@ -6,8 +6,6 @@ const { createJsonWebToken } = require("../utils/jsonWebToken");
 exports.registerUser = async (req, res) => {
   try {
     const userInfo = req.body;
-    // console.log(userInfo);
-
     const result = await User.create(userInfo);
 
     res.status(200).json({
@@ -176,22 +174,6 @@ exports.getAllCustomers = async (req, res) => {
   }
 };
 
-exports.getAllAdmins = async (req, res) => {
-  try {
-    const admins = await User.find({}).where("role").equals("admin");
-
-    res.status(200).json({
-      success: true,
-      data: admins,
-    });
-  } catch (error) {
-    res.status(400).json({
-      success: false,
-      error: error.message,
-    });
-  }
-};
-
 exports.deleteAnUser = async (req, res) => {
   try {
     const { id } = req.params;
@@ -217,41 +199,6 @@ exports.deleteAnUser = async (req, res) => {
     res.status(200).json({
       success: true,
       message: "user delete success",
-    });
-  } catch (error) {
-    res.status(400).json({
-      success: false,
-      error: error.message,
-    });
-  }
-};
-
-exports.addAdmin = async (req, res) => {
-  try {
-    const id = req?.params?.id;
-
-    const isExist = await User.findById(id);
-    if (!isExist) {
-      return res.status(404).json({
-        success: false,
-        error: "User not found",
-      });
-    }
-
-    let newRole = "admin";
-    if (isExist.role === "admin") {
-      newRole = "user";
-    }
-
-    await User.findByIdAndUpdate(id, {
-      $set: {
-        role: newRole,
-      },
-    });
-
-    res.status(200).json({
-      success: true,
-      message: "update role success",
     });
   } catch (error) {
     res.status(400).json({

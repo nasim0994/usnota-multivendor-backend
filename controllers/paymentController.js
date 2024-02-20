@@ -27,9 +27,9 @@ exports.initPayment = async (req, res) => {
       total_amount: totalPrice,
       currency: "BDT",
       tran_id: transactionId,
-      success_url: `http://localhost:5001/payment/payment-success?transactionId=${transactionId}`,
-      fail_url: `http://localhost:5001/payment/payment-fail?transactionId=${transactionId}`,
-      cancel_url: `http://localhost:5001/payment/payment-fail?transactionId=${transactionId}`,
+      success_url: `${process.env.back_end_url}/payment/payment-success?transactionId=${transactionId}`,
+      fail_url: `${process.env.back_end_url}/payment-fail?transactionId=${transactionId}`,
+      cancel_url: `${process.env.back_end_url}/payment-fail?transactionId=${transactionId}`,
       ipn_url: "http://localhost:3030/ipn",
       shipping_method: "",
       product_name: "",
@@ -224,7 +224,7 @@ exports.paymentSuccess = async (req, res) => {
     throw error;
   }
 
-  res.redirect(`http://localhost:5173/payment-result/${transactionId}`);
+  res.redirect(`${process.env.front_end_url}/payment-result/${transactionId}`);
 };
 
 exports.paymentFailed = async (req, res) => {
@@ -233,7 +233,9 @@ exports.paymentFailed = async (req, res) => {
   try {
     await Order.findOneAndDelete({ transactionId });
 
-    res.redirect(`http://localhost:5173/payment-result/${transactionId}`);
+    res.redirect(
+      `${process.env.front_end_url}/payment-result/${transactionId}`
+    );
   } catch (error) {
     res.status(400).json({
       success: false,

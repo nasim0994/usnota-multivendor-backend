@@ -11,7 +11,8 @@ module.exports = async (req, res, next) => {
       });
     }
     const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
-    const user = await User.findOne({phone: decoded.phone});
+    const user = await User.findOne({ phone: decoded.phone });
+    let admin = user?.role != "admin" || user?.role != "superAdmin";
 
     if (!user) {
       return res.status(403).json({
@@ -19,13 +20,14 @@ module.exports = async (req, res, next) => {
         error: "User Not Found",
       });
     }
-    if (user.role !== "admin") {
+    if (!admin) {
       return res.status(403).json({
         success: false,
         error: "Forbidden access",
       });
     }
-    if (user.role === "admin") {
+
+    if (admin) {
       next();
     }
   } catch (error) {
