@@ -59,13 +59,13 @@ exports.getAllProducts = async (req, res) => {
 
   try {
     const targetedCategory = await Categories.findOne({
-      slug: category && JSON.parse(category),
+      slug: category && category,
     });
     const targetedSubCategory = await SubCategory.findOne({
-      slug: subCategory && JSON.parse(subCategory),
+      slug: subCategory && subCategory,
     });
     const targetedSubSubCategory = await SubSubCategory.findOne({
-      slug: subSubCategory && JSON.parse(subSubCategory),
+      slug: subSubCategory && subSubCategory,
     });
 
     const categoryId = targetedCategory?._id;

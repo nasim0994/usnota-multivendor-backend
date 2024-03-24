@@ -34,7 +34,7 @@ exports.addBanner = async (req, res) => {
 
 exports.allBanners = async (req, res) => {
   try {
-    const banners = await Banner.find({});
+    const banners = await Banner.find({}).sort({ order: 1 });
 
     res.status(200).json({
       success: true,
