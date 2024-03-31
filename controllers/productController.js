@@ -2,6 +2,7 @@ const Product = require("../models/productModel");
 const Categories = require("../models/categoriesModel");
 const SubCategory = require("../models/subCategoryModel");
 const SubSubCategory = require("../models/subSubCategoryModel");
+const Brand = require("../models/brandModel");
 const slugify = require("slugify");
 const fs = require("fs");
 const { calculatePagination } = require("../utils/calculatePagination");
@@ -54,7 +55,7 @@ exports.addProduct = async (req, res) => {
 
 exports.getAllProducts = async (req, res) => {
   const paginationOptions = pick(req.query, ["page", "limit"]);
-  const { category, subCategory, subSubCategory } = req.query;
+  const { category, subCategory, subSubCategory, brand } = req.query;
   const { page, limit, skip } = calculatePagination(paginationOptions);
 
   try {
@@ -67,15 +68,20 @@ exports.getAllProducts = async (req, res) => {
     const targetedSubSubCategory = await SubSubCategory.findOne({
       slug: subSubCategory && subSubCategory,
     });
+    const targetedBrand = await Brand.findOne({
+      slug: brand && brand,
+    });
 
     const categoryId = targetedCategory?._id;
     const subCategoryId = targetedSubCategory?._id;
     const subSubategoryId = targetedSubSubCategory?._id;
+    const brandName = targetedBrand?.name;
 
     let query = {};
     if (category) query.category = categoryId;
     if (subCategory) query.subCategory = subCategoryId;
     if (subSubCategory) query.subSubCategory = subSubategoryId;
+    if (brand) query.brand = brandName;
 
     const products = await Product.find(query)
       .skip(skip)

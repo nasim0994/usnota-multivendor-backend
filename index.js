@@ -17,8 +17,11 @@ const productRouter = require("./routes/productRoutes");
 const flashDealRouter = require("./routes/flashDealRoutes");
 const reviewRouter = require("./routes/reveiwRoutes");
 const campaignBannerRouter = require("./routes/campaignBannerRoutes");
+const topCampaignBannerRouter = require("./routes/TopCampaignBannerRoutes");
 const brandRouter = require("./routes/brandRoutes");
 const couponRouter = require("./routes/couponRoutes");
+const seoRouter = require("./routes/seoRoutes");
+const shippingConfigRouter = require("./routes/shippingConfigRoutes");
 
 // General
 const businessInfoRoutes = require("./routes/businessInfoRoutes");
@@ -50,8 +53,11 @@ app.use("/product", productRouter);
 app.use("/flash-deal", flashDealRouter);
 app.use("/review", reviewRouter);
 app.use("/campaignBanner", campaignBannerRouter);
+app.use("/topCampaignBanner", topCampaignBannerRouter);
 app.use("/brand", brandRouter);
 app.use("/coupon", couponRouter);
+app.use("/seo", seoRouter);
+app.use("/shippingConfig", shippingConfigRouter);
 
 //------General
 app.use("/businessInfo", businessInfoRoutes);

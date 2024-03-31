@@ -36,3 +36,28 @@ exports.getAllFlashDeal = async (req, res) => {
     });
   }
 };
+
+exports.updateFlashDealstatus = async (req, res) => {
+  try {
+    const id = req.params.id;
+
+    await FlashDeal.findOneAndUpdate(
+      { id: id },
+      { status: true },
+      { new: true }
+    );
+
+    // Set status of other deals to false
+    await FlashDeal.updateMany({ id: { $ne: id } }, { status: false });
+
+    res.status(200).json({
+      success: true,
+      message: "flash Deal status update success",
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: error.message,
+    });
+  }
+};

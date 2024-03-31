@@ -19,13 +19,6 @@ const BusinessInfoSchema = new mongoose.Schema(
     tagline: {
       type: String,
     },
-    title: {
-      type: String,
-      required: true,
-    },
-    metaContent: {
-      type: String,
-    },
   },
   { timestamps: false }
 );
