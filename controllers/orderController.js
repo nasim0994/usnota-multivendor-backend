@@ -1,5 +1,5 @@
 const Order = require("../models/orderModel");
-const Product = require("../models/productModel");
+const Product = require("../models/seller/productModel");
 const { calculatePagination } = require("../utils/calculatePagination");
 const { pick } = require("../utils/pick");
 const axios = require("axios");

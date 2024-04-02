@@ -119,6 +119,29 @@ exports.updateImage = async (req, res) => {
   }
 };
 
+exports.getsellerById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const seller = await Seller.findById(id);
+    if (seller) {
+      res.status(200).json({
+        success: true,
+        data: seller,
+      });
+    } else {
+      res.status(404).json({
+        success: false,
+        error: "Seller not found",
+      });
+    }
+  } catch (error) {
+    res.status(400).json({
+      success: false,
+      error: error.message,
+    });
+  }
+};
+
 // exports.updateInfo = async (req, res) => {
 //   try {
 //     const { id } = req.params;

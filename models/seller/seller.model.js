@@ -46,6 +46,18 @@ const sellerSchema = new mongoose.Schema(
       default: true,
       enum: [true, false],
     },
+    rating: {
+      type: Number,
+      default: 0,
+    },
+    like: {
+      type: Number,
+      default: 0,
+    },
+    follow: {
+      type: Number,
+      default: 0,
+    },
   },
   { timestamps: true }
 );

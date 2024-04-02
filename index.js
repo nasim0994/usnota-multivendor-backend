@@ -32,7 +32,7 @@ const paymentRouter = require("./routes/paymentRoute");
 
 //------------------- Seller routers
 const sellerRoutes = require("./routes/seller/seller.routes");
-const productRouter = require("./routes/productRoutes");
+const productRouter = require("./routes/seller/productRoutes");
 
 const app = express();
 app.use(cors());

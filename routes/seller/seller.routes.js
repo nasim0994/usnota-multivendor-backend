@@ -5,6 +5,7 @@ const {
   registerSeller,
   loginSeller,
   getsellerByToken,
+  getsellerById,
 } = require("../../controllers/seller/seller.controllers");
 
 const storage = multer.diskStorage({
@@ -20,5 +21,7 @@ const upload = multer({ storage: storage });
 router.post("/register", registerSeller);
 router.post("/login", loginSeller);
 router.get("/me", verifyToken, getsellerByToken);
+router.get("/all-sellers", getsellerById);
+router.get("/:id", getsellerById);
 
 module.exports = router;

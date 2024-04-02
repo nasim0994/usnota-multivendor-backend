@@ -1,5 +1,5 @@
 const Review = require("../models/reviewModel");
-const Product = require("../models/productModel");
+const Product = require("../models/seller/productModel");
 const User = require("../models/userModel");
 const mongoose = require("mongoose");
 const { pick } = require("../utils/pick");

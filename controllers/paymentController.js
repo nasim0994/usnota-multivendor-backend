@@ -2,7 +2,7 @@ const axios = require("axios");
 const User = require("../models/userModel");
 const { v4: uuidv4 } = require("uuid");
 const Order = require("../models/orderModel");
-const Product = require("../models/productModel");
+const Product = require("../models/seller/productModel");
 const mongoose = require("mongoose");
 
 exports.initPayment = async (req, res) => {

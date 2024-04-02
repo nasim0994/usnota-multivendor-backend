@@ -8,7 +8,8 @@ const {
   deleteProductById,
   updateProduct,
   getFeaturedProducts,
-} = require("../controllers/productController");
+  getProductBySellerId,
+} = require("../../controllers/seller/productController");
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -26,6 +27,8 @@ router.get("/featured-products", getFeaturedProducts);
 
 router.get("/:id", getProductById);
 router.get("/getbyslug/:slug", getProductBySlug);
+router.get("/seller/:id", getProductBySellerId);
+
 router.patch("/update-product/:id", upload, updateProduct);
 router.delete("/delete/:id", deleteProductById);
 

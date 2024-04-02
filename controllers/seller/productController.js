@@ -1,12 +1,12 @@
-const Product = require("../models/productModel");
-const Categories = require("../models/categoriesModel");
-const SubCategory = require("../models/subCategoryModel");
-const SubSubCategory = require("../models/subSubCategoryModel");
-const Brand = require("../models/brandModel");
-const slugify = require("slugify");
 const fs = require("fs");
-const { calculatePagination } = require("../utils/calculatePagination");
-const { pick } = require("../utils/pick");
+const slugify = require("slugify");
+const Product = require("../../models/seller/productModel");
+const Categories = require("../../models/categoriesModel");
+const SubCategory = require("../../models/subCategoryModel");
+const SubSubCategory = require("../../models/subSubCategoryModel");
+const Brand = require("../../models/brandModel");
+const { calculatePagination } = require("../../utils/calculatePagination");
+const { pick } = require("../../utils/pick");
 
 exports.addProduct = async (req, res) => {
   const images = req?.files?.map((file) => file.filename);
@@ -87,7 +87,10 @@ exports.getAllProducts = async (req, res) => {
       .skip(skip)
       .limit(limit)
       .sort({ createdAt: -1 })
-      .populate("category subCategory subSubCategory", "name slug icon");
+      .populate(
+        "category subCategory subSubCategory seller",
+        "name slug icon email shopName phone status verify"
+      );
 
     const total = await Product.countDocuments(query);
     const pages = Math.ceil(parseInt(total) / parseInt(limit));
@@ -114,7 +117,8 @@ exports.getAllProducts = async (req, res) => {
 exports.getProductById = async (req, res) => {
   try {
     const result = await Product.findById(req?.params?.id).populate(
-      "category subCategory subSubCategory"
+      "category subCategory subSubCategory seller",
+      "name slug icon email shopName phone status verify"
     );
 
     if (!result) {
@@ -140,14 +144,42 @@ exports.getProductById = async (req, res) => {
 exports.getProductBySlug = async (req, res) => {
   try {
     const result = await Product.findOne({ slug: req?.params?.slug }).populate(
-      "category subCategory subSubCategory",
-      "name slug icon"
+      "category subCategory subSubCategory seller",
+      "name slug icon email shopName phone status verify"
     );
 
     if (!result) {
       return res.status(404).json({
         success: false,
         message: "Product not found",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Product",
+      data: result,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: error.message,
+    });
+  }
+};
+
+exports.getProductBySellerId = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const result = await Product.find({ seller: id }).populate(
+      "category subCategory subSubCategory seller",
+      "name slug icon email shopName phone status verify"
+    );
+
+    if (!result) {
+      return res.status(404).json({
+        success: false,
+        message: "Products not found",
       });
     }
 
