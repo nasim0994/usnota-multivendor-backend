@@ -6,6 +6,7 @@ const {
   loginSeller,
   getsellerByToken,
   getsellerById,
+  getAllSellers,
 } = require("../../controllers/seller/seller.controllers");
 
 const storage = multer.diskStorage({
@@ -21,7 +22,8 @@ const upload = multer({ storage: storage });
 router.post("/register", registerSeller);
 router.post("/login", loginSeller);
 router.get("/me", verifyToken, getsellerByToken);
-router.get("/all-sellers", getsellerById);
+router.get("/all-sellers", getAllSellers);
 router.get("/:id", getsellerById);
+router.put("/update-verify/:id");
 
 module.exports = router;

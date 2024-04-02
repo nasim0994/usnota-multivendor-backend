@@ -63,6 +63,28 @@ exports.loginSeller = async (req, res) => {
   }
 };
 
+exports.getAllSellers = async (req, res) => {
+  try {
+    const sellers = await Seller.find({});
+    if (sellers) {
+      res.status(200).json({
+        success: true,
+        data: sellers,
+      });
+    } else {
+      res.status(404).json({
+        success: false,
+        error: "Sellers not found",
+      });
+    }
+  } catch (error) {
+    res.status(400).json({
+      success: false,
+      error: error.message,
+    });
+  }
+};
+
 exports.getsellerByToken = async (req, res) => {
   try {
     const seller = await Seller.findOne({ phone: req.user.phone });

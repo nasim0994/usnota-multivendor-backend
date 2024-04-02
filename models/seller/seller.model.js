@@ -5,7 +5,6 @@ const sellerSchema = new mongoose.Schema(
   {
     name: {
       type: String,
-      required: true,
     },
     shopName: {
       type: String,
@@ -45,10 +44,6 @@ const sellerSchema = new mongoose.Schema(
       required: true,
       default: true,
       enum: [true, false],
-    },
-    rating: {
-      type: Number,
-      default: 0,
     },
     like: {
       type: Number,
