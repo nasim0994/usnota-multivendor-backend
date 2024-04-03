@@ -164,6 +164,78 @@ exports.getsellerById = async (req, res) => {
   }
 };
 
+exports.toggleSellerVerify = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const seller = await Seller.findById(id);
+    if (!seller) {
+      return res.status(404).json({
+        success: false,
+        error: "Seller not found",
+      });
+    }
+
+    const filter = { _id: id };
+    const update = { verify: !seller.verify };
+    await Seller.findOneAndUpdate(filter, update);
+
+    res.status(200).json({
+      success: true,
+      message: "Seller verify success",
+    });
+  } catch (error) {
+    res.status(400).json({
+      success: false,
+      error: error.message,
+    });
+  }
+};
+
+exports.updateInfoForVerify = async (req, res) => {
+  const idCard = req?.file?.filename;
+
+  try {
+    const { id } = req.params;
+    const seller = await Seller.findById(id);
+    if (!seller) {
+      return res.status(404).json({
+        success: false,
+        error: "Seller not found",
+      });
+    }
+
+    if (seller?.idCard) {
+      fs.unlink(`./uploads/seller/profile/${seller?.idCard}`, (err) => {
+        if (err) {
+          console.error(err);
+        }
+      });
+    }
+
+    const data = req.body;
+
+    const filter = { _id: id };
+    const update = { ...data, idCard };
+    const result = await Seller.findOneAndUpdate(filter, update, { new: true });
+
+    res.status(200).json({
+      success: true,
+      message: "Seller verification info update success",
+      data: result,
+    });
+  } catch (error) {
+    fs.unlink(`./uploads/seller/profile/${idCard}`, (err) => {
+      if (err) {
+        console.error(err);
+      }
+    });
+    res.status(400).json({
+      success: false,
+      error: error.message,
+    });
+  }
+};
+
 // exports.updateInfo = async (req, res) => {
 //   try {
 //     const { id } = req.params;

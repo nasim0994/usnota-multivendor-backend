@@ -53,6 +53,36 @@ const sellerSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
+
+    // More
+    country: {
+      type: String,
+      default: "Bangladesh",
+    },
+    city: {
+      type: String,
+    },
+    area: {
+      type: String,
+    },
+    state: {
+      type: String,
+    },
+    fullAddress: {
+      type: String,
+    },
+    storeLink: {
+      type: String,
+    },
+    idCard: {
+      type: String,
+    },
+    idName: {
+      type: String,
+    },
+    idNumber: {
+      type: String,
+    },
   },
   { timestamps: true }
 );
