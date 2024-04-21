@@ -16,6 +16,11 @@ const productSchema = {
   color: {
     type: String,
   },
+  sellerId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Seller",
+    required: true,
+  },
 };
 
 const OrderSchema = new mongoose.Schema(

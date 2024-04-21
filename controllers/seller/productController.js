@@ -114,6 +114,29 @@ exports.getAllProducts = async (req, res) => {
   }
 };
 
+exports.getPopularProducts = async (req, res) => {
+  try {
+    const products = await Product.find({})
+      .sort({ sold: -1 })
+      .limit(10)
+      .populate(
+        "category subCategory subSubCategory seller",
+        "name slug icon email shopName phone status verify"
+      );
+
+    res.status(200).json({
+      success: true,
+      message: "Products fetched successfully",
+      data: products,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: error.message,
+    });
+  }
+};
+
 exports.getProductById = async (req, res) => {
   try {
     const result = await Product.findById(req?.params?.id).populate(

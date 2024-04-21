@@ -42,7 +42,6 @@ exports.addOrder = async (req, res) => {
     };
 
     const result = await Order.create(orderData);
-    // console.log(result);
 
     result?.products?.forEach(async (product) => {
       const { productId, quantity, color, size } = product;
@@ -51,6 +50,16 @@ exports.addOrder = async (req, res) => {
         _id: productId,
       });
       // console.log(selectedProduct);
+
+      await Product.findByIdAndUpdate(
+        productId,
+        {
+          $set: {
+            sold: selectedProduct.sold + quantity,
+          },
+        },
+        { new: true }
+      );
 
       if (color && size) {
         const selectedVariant = selectedProduct?.variants?.find(
@@ -193,12 +202,12 @@ exports.getAllOrders = async (req, res) => {
     res.status(200).json({
       success: true,
       message: "Orders fetched successfully",
-      data: orders,
       meta: {
         total,
         page,
         limit,
       },
+      data: orders,
     });
   } catch (error) {
     res.status(400).json({
@@ -261,6 +270,26 @@ exports.getOrderByTransactionId = async (req, res) => {
       success: true,
       message: "Order fetched successfully",
       data: order,
+    });
+  } catch (error) {
+    res.status(400).json({
+      success: false,
+      error: error.message,
+    });
+  }
+};
+
+// Seller order by seller id
+exports.getSellerOrdersById = async (req, res) => {
+  const id = req?.params?.id;
+
+  try {
+    const orders = await Order.find({ "products.sellerId": id });
+
+    res.status(200).json({
+      success: true,
+      message: "Seller Orders get success",
+      data: orders,
     });
   } catch (error) {
     res.status(400).json({
