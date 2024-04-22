@@ -392,3 +392,34 @@ exports.deleteReview = async (req, res) => {
     });
   }
 };
+
+exports.getReviewsBySellerId = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const paginationOptions = pick(req.query, ["page", "limit"]);
+    const { page, limit, skip } = calculatePagination(paginationOptions);
+
+    const reviews = await Review.find({ seller: id })
+      .populate(["user", "product"])
+      .skip(skip)
+      .limit(limit);
+
+    const total = await Review.countDocuments({ seller: id });
+
+    res.status(200).json({
+      success: true,
+      message: "Reviews fetched successfully",
+      data: reviews,
+      meta: {
+        total,
+        page,
+        limit,
+      },
+    });
+  } catch (error) {
+    res.status(400).json({
+      success: false,
+      error: error,
+    });
+  }
+};
