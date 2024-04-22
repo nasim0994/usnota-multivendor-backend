@@ -9,6 +9,9 @@ const {
   getAllSellers,
   toggleSellerVerify,
   updateInfoForVerify,
+  updateLogo,
+  updateBanner,
+  updateInfo,
 } = require("../../controllers/seller/seller.controllers");
 
 const storage = multer.diskStorage({
@@ -32,5 +35,9 @@ router.patch(
   upload.single("idCard"),
   updateInfoForVerify
 );
+
+router.patch("/update/logo/:id", upload.single("logo"), updateLogo);
+router.patch("/update/banner/:id", upload.single("banner"), updateBanner);
+router.patch("/update/profileInfo/:id", updateInfo);
 
 module.exports = router;

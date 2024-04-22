@@ -107,40 +107,6 @@ exports.getsellerByToken = async (req, res) => {
   }
 };
 
-exports.updateImage = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const image = req?.file?.filename ? req.file.filename : "";
-
-    const user = await User.findOne({ _id: id });
-    const uploadedImage = user?.image;
-
-    if (uploadedImage && uploadedImage !== null) {
-      fs.unlink(`./uploads/user/${uploadedImage}`, (err) => {
-        if (err) {
-          console.log(err);
-        }
-      });
-    }
-
-    await User.findByIdAndUpdate(id, {
-      $set: {
-        image: image,
-      },
-    });
-
-    res.status(200).json({
-      success: true,
-      message: "Image update success",
-    });
-  } catch (error) {
-    res.status(400).json({
-      success: false,
-      error: error.message,
-    });
-  }
-};
-
 exports.getsellerById = async (req, res) => {
   try {
     const { id } = req.params;
@@ -236,19 +202,109 @@ exports.updateInfoForVerify = async (req, res) => {
   }
 };
 
-// exports.updateInfo = async (req, res) => {
-//   try {
-//     const { id } = req.params;
-//     await User.findByIdAndUpdate(id, req?.body, { new: true });
+exports.updateLogo = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const logo = req?.file?.filename;
 
-//     res.status(200).json({
-//       success: true,
-//       message: "update success",
-//     });
-//   } catch (error) {
-//     res.status(400).json({
-//       success: false,
-//       error: error.message,
-//     });
-//   }
-// };
+    if (!logo) {
+      return res.status(404).json({
+        success: false,
+        error: "Logo is requred",
+      });
+    }
+
+    const seller = await Seller.findById(id);
+    const oldLogo = seller?.logo;
+
+    await Seller.findByIdAndUpdate(
+      id,
+      {
+        $set: {
+          logo: logo,
+        },
+      },
+      { new: true }
+    );
+
+    if (oldLogo && oldLogo !== null) {
+      fs.unlink(`./uploads/seller/profile/${oldLogo}`, (err) => {
+        if (err) {
+          console.log(err);
+        }
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Logo update success",
+    });
+  } catch (error) {
+    res.status(400).json({
+      success: false,
+      error: error.message,
+    });
+  }
+};
+
+exports.updateBanner = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const banner = req?.file?.filename;
+
+    if (!banner) {
+      return res.status(404).json({
+        success: false,
+        error: "Banner is requred",
+      });
+    }
+
+    const seller = await Seller.findById(id);
+    const oldBanner = seller?.banner;
+
+    await Seller.findByIdAndUpdate(
+      id,
+      {
+        $set: {
+          banner: banner,
+        },
+      },
+      { new: true }
+    );
+
+    if (oldBanner && oldBanner !== null) {
+      fs.unlink(`./uploads/seller/profile/${oldBanner}`, (err) => {
+        if (err) {
+          console.log(err);
+        }
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Banner update success",
+    });
+  } catch (error) {
+    res.status(400).json({
+      success: false,
+      error: error.message,
+    });
+  }
+};
+
+exports.updateInfo = async (req, res) => {
+  try {
+    const { id } = req.params;
+    await Seller.findByIdAndUpdate(id, req?.body, { new: true });
+
+    res.status(200).json({
+      success: true,
+      message: "Update info success",
+    });
+  } catch (error) {
+    res.status(400).json({
+      success: false,
+      error: error.message,
+    });
+  }
+};

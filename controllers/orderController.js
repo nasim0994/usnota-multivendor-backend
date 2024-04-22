@@ -281,14 +281,33 @@ exports.getOrderByTransactionId = async (req, res) => {
 
 // Seller order by seller id
 exports.getSellerOrdersById = async (req, res) => {
+  const paginationOptions = pick(req.query, ["page", "limit"]);
+  const { page, limit, skip } = calculatePagination(paginationOptions);
   const id = req?.params?.id;
 
   try {
-    const orders = await Order.find({ "products.sellerId": id });
+    const orders = await Order.find({ "products.sellerId": id })
+      .sort({
+        createdAt: -1,
+      })
+      .populate("userId")
+      .populate("products.productId")
+      .skip(skip)
+      .limit(limit)
+      .lean();
+
+    const total = await Order.countDocuments({});
+    const pages = Math.ceil(parseInt(total) / parseInt(limit));
 
     res.status(200).json({
       success: true,
       message: "Seller Orders get success",
+      meta: {
+        total,
+        pages,
+        page,
+        limit,
+      },
       data: orders,
     });
   } catch (error) {
