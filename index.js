@@ -23,6 +23,9 @@ const themeRouter = require("./routes/themeRoutes");
 
 const flashDealRouter = require("./routes/flashDealRoutes");
 
+// Seller page
+const SellerFAQRoutes = require("./routes/admin/sellerPage/sellerFAQ.routes");
+
 //------------------- User routers
 const userRoutes = require("./routes/userRoutes");
 const reviewRouter = require("./routes/reveiwRoutes");
@@ -63,6 +66,8 @@ app.use("/brand", brandRouter);
 app.use("/coupon", couponRouter);
 app.use("/seo", seoRouter);
 app.use("/shippingConfig", shippingConfigRouter);
+
+app.use("/seller-faq", SellerFAQRoutes);
 
 //---------------------------------
 //
