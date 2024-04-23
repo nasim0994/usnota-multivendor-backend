@@ -37,7 +37,7 @@ router.patch(
 );
 
 router.patch(
-  "/update-seller-logo/:id",
+  "/update/seller-logo/:id",
   verifyAdmin,
   upload.single("logo"),
   updateSellerLogo

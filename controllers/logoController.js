@@ -160,18 +160,20 @@ exports.updateSellerLogo = async (req, res) => {
       });
     }
 
-    const id = req?.params?.id;
-    const isLogo = await SellerLogo.findOne({ _id: id });
+    const id = req.params.id;
+    const isLogo = await SellerLogo.findById(id);
 
-    if (isLogo) {
-      await SellerLogo.findByIdAndUpdate(id, { logo: logo }, { new: true });
-
+    if (isLogo?.logo && logo) {
       fs.unlink(`./uploads/logo/${isLogo?.logo}`, (err) => {
         if (err) {
           console.error(err);
           return;
         }
       });
+    }
+
+    if (isLogo && logo) {
+      await SellerLogo.findByIdAndUpdate(id, { logo: logo }, { new: true });
 
       res.status(200).json({
         success: true,
