@@ -25,6 +25,9 @@ const flashDealRouter = require("./routes/flashDealRoutes");
 
 // Seller page
 const SellerFAQRoutes = require("./routes/admin/sellerPage/sellerFAQ.routes");
+const SellerBanner = require("./routes/admin/sellerPage/sellerBanner.routes");
+const SellerMobileAppRoutes = require("./routes/admin/sellerPage/sellerMobileApp.routes");
+const WhySellHereRoutes = require("./routes/admin/sellerPage/whySellHere.routes");
 
 //------------------- User routers
 const userRoutes = require("./routes/userRoutes");
@@ -68,6 +71,9 @@ app.use("/seo", seoRouter);
 app.use("/shippingConfig", shippingConfigRouter);
 
 app.use("/seller-faq", SellerFAQRoutes);
+app.use("/seller-banner", SellerBanner);
+app.use("/seller-mobileApp", SellerMobileAppRoutes);
+app.use("/why-sell-here", WhySellHereRoutes);
 
 //---------------------------------
 //
