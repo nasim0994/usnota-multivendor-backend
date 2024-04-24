@@ -49,9 +49,9 @@ exports.loginUser = async (req, res) => {
     // 5. generate token
     let accessToken = "";
     if (user?.role === "admin") {
-      accessToken = createJsonWebToken({ phone, password }, "2h");
+      accessToken = createJsonWebToken({ phone, password }, "12h");
     } else {
-      accessToken = createJsonWebToken({ phone, password }, "2d");
+      accessToken = createJsonWebToken({ phone, password }, "7d");
     }
 
     res.status(200).json({

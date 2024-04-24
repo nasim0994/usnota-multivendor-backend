@@ -193,11 +193,18 @@ exports.getProductBySlug = async (req, res) => {
 
 exports.getProductBySellerId = async (req, res) => {
   try {
+    const paginationOptions = pick(req.query, ["page", "limit"]);
+    const { page, limit, skip } = calculatePagination(paginationOptions);
+
     const { id } = req.params;
-    const result = await Product.find({ seller: id }).populate(
-      "category subCategory subSubCategory seller",
-      "name slug icon email shopName phone status verify"
-    );
+    const result = await Product.find({ seller: id })
+      .populate(
+        "category subCategory subSubCategory seller",
+        "name slug icon email shopName phone status verify"
+      )
+      .skip(skip)
+      .limit(limit)
+      .sort({ createdAt: -1 });
 
     if (!result) {
       return res.status(404).json({
@@ -206,9 +213,18 @@ exports.getProductBySellerId = async (req, res) => {
       });
     }
 
+    const total = await Product.countDocuments();
+    const pages = Math.ceil(parseInt(total) / parseInt(limit));
+
     res.status(200).json({
       success: true,
       message: "Product",
+      meta: {
+        total,
+        pages,
+        page,
+        limit,
+      },
       data: result,
     });
   } catch (error) {

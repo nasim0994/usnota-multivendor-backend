@@ -47,7 +47,7 @@ exports.loginSeller = async (req, res) => {
 
     // 5. generate token
     let accessToken = "";
-    accessToken = createJsonWebToken({ phone, password }, "6h");
+    accessToken = createJsonWebToken({ phone, password }, "12h");
 
     res.status(200).json({
       success: true,

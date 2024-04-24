@@ -44,91 +44,97 @@ exports.addOrder = async (req, res) => {
     const result = await Order.create(orderData);
 
     result?.products?.forEach(async (product) => {
-      const { productId, quantity, color, size } = product;
+      const { products } = product;
 
-      const selectedProduct = await Product.findOne({
-        _id: productId,
+      products?.forEach(async (mainProduct) => {
+        const { productId, quantity, color, size } = mainProduct;
+
+        const selectedProduct = await Product.findOne({
+          _id: productId,
+        });
+
+        // console.log(mainProduct);
+        // console.log(selectedProduct);
+
+        await Product.findByIdAndUpdate(
+          productId,
+          {
+            $set: {
+              sold: selectedProduct.sold + quantity,
+            },
+          },
+          { new: true }
+        );
+
+        if (color && size) {
+          const selectedVariant = selectedProduct?.variants?.find(
+            (variant) => variant.color === color && variant.size === size
+          );
+
+          // console.log(selectedVariant, "color & size");
+          const updatedQuantity = selectedVariant?.quantity - quantity;
+
+          await Product.findByIdAndUpdate(
+            productId,
+            {
+              $set: {
+                variants: [
+                  ...selectedProduct?.variants?.map((variant) => {
+                    if (variant.color === color && variant.size === size) {
+                      return {
+                        ...variant,
+                        quantity: updatedQuantity,
+                      };
+                    }
+                    return variant;
+                  }),
+                ],
+              },
+            },
+            { new: true }
+          );
+        } else if (color) {
+          const selectedVariant = selectedProduct?.variants?.find(
+            (variant) => variant.color === color
+          );
+
+          // console.log(selectedVariant, "color");
+          const updatedQuantity = selectedVariant?.quantity - quantity;
+
+          await Product.findByIdAndUpdate(
+            productId,
+            {
+              $set: {
+                variants: [
+                  ...selectedProduct?.variants?.map((variant) => {
+                    if (variant.color === color) {
+                      return {
+                        ...variant,
+                        quantity: updatedQuantity,
+                      };
+                    }
+                    return variant;
+                  }),
+                ],
+              },
+            },
+            { new: true }
+          );
+        } else {
+          const updatedQuantity = selectedProduct?.quantity - quantity;
+          // console.log(selectedProduct?.quantity, "quantity");
+
+          await Product.findByIdAndUpdate(
+            productId,
+            {
+              $set: {
+                quantity: updatedQuantity,
+              },
+            },
+            { new: true }
+          );
+        }
       });
-      // console.log(selectedProduct);
-
-      await Product.findByIdAndUpdate(
-        productId,
-        {
-          $set: {
-            sold: selectedProduct.sold + quantity,
-          },
-        },
-        { new: true }
-      );
-
-      if (color && size) {
-        const selectedVariant = selectedProduct?.variants?.find(
-          (variant) => variant.color === color && variant.size === size
-        );
-
-        // console.log(selectedVariant, "color & size");
-        const updatedQuantity = selectedVariant?.quantity - quantity;
-
-        await Product.findByIdAndUpdate(
-          productId,
-          {
-            $set: {
-              variants: [
-                ...selectedProduct?.variants?.map((variant) => {
-                  if (variant.color === color && variant.size === size) {
-                    return {
-                      ...variant,
-                      quantity: updatedQuantity,
-                    };
-                  }
-                  return variant;
-                }),
-              ],
-            },
-          },
-          { new: true }
-        );
-      } else if (color) {
-        const selectedVariant = selectedProduct?.variants?.find(
-          (variant) => variant.color === color
-        );
-
-        // console.log(selectedVariant, "color");
-        const updatedQuantity = selectedVariant?.quantity - quantity;
-
-        await Product.findByIdAndUpdate(
-          productId,
-          {
-            $set: {
-              variants: [
-                ...selectedProduct?.variants?.map((variant) => {
-                  if (variant.color === color) {
-                    return {
-                      ...variant,
-                      quantity: updatedQuantity,
-                    };
-                  }
-                  return variant;
-                }),
-              ],
-            },
-          },
-          { new: true }
-        );
-      } else {
-        const updatedQuantity = selectedProduct?.quantity - quantity;
-        // console.log(selectedProduct?.quantity, "quantity");
-
-        await Product.findByIdAndUpdate(
-          productId,
-          {
-            $set: {
-              quantity: updatedQuantity,
-            },
-          },
-          { new: true }
-        );
-      }
     });
 
     res.status(201).json({
@@ -169,7 +175,8 @@ exports.getOrderById = async (req, res) => {
   try {
     const order = await Order.findById(id)
       .populate("userId")
-      .populate("products.productId");
+      .populate("products.products.productId")
+      .populate("products.sellerId");
 
     res.status(200).json({
       success: true,
@@ -192,12 +199,17 @@ exports.getAllOrders = async (req, res) => {
   try {
     const orders = await Order.find({})
       .populate("userId")
-      .populate("products.productId")
+      .populate("products.products.productId")
+      .populate("products.sellerId")
       .skip(skip)
       .limit(limit)
-      .lean();
+      .lean()
+      .sort({
+        createdAt: -1,
+      });
 
     const total = await Order.countDocuments({});
+    const pages = Math.ceil(parseInt(total) / parseInt(limit));
 
     res.status(200).json({
       success: true,
@@ -206,6 +218,7 @@ exports.getAllOrders = async (req, res) => {
         total,
         page,
         limit,
+        pages,
       },
       data: orders,
     });
@@ -290,8 +303,7 @@ exports.getSellerOrdersById = async (req, res) => {
       .sort({
         createdAt: -1,
       })
-      .populate("userId")
-      .populate("products.productId")
+      .populate("products.products.productId")
       .skip(skip)
       .limit(limit)
       .lean();
@@ -309,6 +321,71 @@ exports.getSellerOrdersById = async (req, res) => {
         limit,
       },
       data: orders,
+    });
+  } catch (error) {
+    res.status(400).json({
+      success: false,
+      error: error.message,
+    });
+  }
+};
+
+exports.getOrdersSeparateSeller = async (req, res) => {
+  const paginationOptions = pick(req.query, ["page", "limit"]);
+  const { page, limit, skip } = calculatePagination(paginationOptions);
+
+  try {
+    // const ordersBySeller = await Order.aggregate([
+    //   { $unwind: "$products" },
+    //   { $group: { _id: "$products.sellerId", orders: { $push: "$$ROOT" } } },
+    //   {
+    //     $lookup: {
+    //       from: "sellers",
+    //       localField: "_id",
+    //       foreignField: "_id",
+    //       as: "sellerInfo",
+    //     },
+    //   },
+    // ]);
+
+    // const orders = await Order.find({ "products.sellerId": id })
+    //   .sort({
+    //     createdAt: -1,
+    //   })
+    //   .populate("userId")
+    //   .populate("products.products.productId")
+    //   .skip(skip)
+    //   .limit(limit)
+    //   .lean();
+
+    // Fetch all orders from the database
+    // const orders = await Order.find();
+
+    // // Group orders by sellerId
+    // const sellerOrders = {};
+    // orders.forEach((order) => {
+    //   order.products.forEach((product) => {
+    //     if (!sellerOrders[order.id]) {
+    //       sellerOrders[order.id] = [order];
+    //     } else {
+    //       sellerOrders[order.id].push(order);
+    //     }
+    //   });
+    // });
+
+    const total = await Order.countDocuments({});
+    const pages = Math.ceil(parseInt(total) / parseInt(limit));
+
+    res.status(200).json({
+      success: true,
+      message: "Seller Orders get success",
+      meta: {
+        total,
+        pages,
+        page,
+        limit,
+      },
+      // data: ordersBySeller,
     });
   } catch (error) {
     res.status(400).json({
