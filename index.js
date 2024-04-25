@@ -40,6 +40,8 @@ const paymentRouter = require("./routes/paymentRoute");
 const sellerRoutes = require("./routes/seller/seller.routes");
 const productRouter = require("./routes/seller/productRoutes");
 
+const paymentRequestRoutes = require("./routes/seller/paymentRequest.routes");
+
 const app = express();
 app.use(cors());
 app.use(express.json());
@@ -100,6 +102,8 @@ app.use("/theme", themeRouter);
 //----------------------------------
 app.use("/seller", sellerRoutes);
 app.use("/product", productRouter);
+
+app.use("/payment-request", paymentRequestRoutes);
 
 app.get("/", (req, res) => {
   res.send(`Server is Running on port ${port}`);
