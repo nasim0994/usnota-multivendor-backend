@@ -1,10 +1,8 @@
 const Order = require("../models/orderModel");
 const Product = require("../models/seller/productModel");
+const SellerOrder = require("../models/seller/sellerOrder.model");
 const { calculatePagination } = require("../utils/calculatePagination");
 const { pick } = require("../utils/pick");
-const axios = require("axios");
-const User = require("../models/userModel");
-const { v4: uuidv4 } = require("uuid");
 
 exports.addOrder = async (req, res) => {
   const data = req?.body;
@@ -41,9 +39,19 @@ exports.addOrder = async (req, res) => {
       invoiceNumber,
     };
 
-    const result = await Order.create(orderData);
+    const mainOrder = await Order.create(orderData);
 
-    result?.products?.forEach(async (product) => {
+    if (mainOrder?._id) {
+      const flattenedOrders = data.products.map((product) => ({
+        sellerId: product.sellerId,
+        products: product.products,
+        mainOrderId: mainOrder?._id,
+      }));
+
+      await SellerOrder.insertMany(flattenedOrders);
+    }
+
+    mainOrder?.products?.forEach(async (product) => {
       const { products } = product;
 
       products?.forEach(async (mainProduct) => {
@@ -52,9 +60,6 @@ exports.addOrder = async (req, res) => {
         const selectedProduct = await Product.findOne({
           _id: productId,
         });
-
-        // console.log(mainProduct);
-        // console.log(selectedProduct);
 
         await Product.findByIdAndUpdate(
           productId,
@@ -139,8 +144,8 @@ exports.addOrder = async (req, res) => {
 
     res.status(201).json({
       success: true,
-      message: "Order added successfully",
-      //   data: result,
+      message: "Order create success",
+      data: mainOrder,
     });
   } catch (error) {
     res.status(400).json({
@@ -234,12 +239,14 @@ exports.deleteOrderById = async (req, res) => {
   const id = req?.params?.id;
 
   try {
-    const result = await Order.findByIdAndDelete(id);
+    await Order.findByIdAndDelete(id);
+    await SellerOrder.deleteMany({
+      mainOrderId: { $in: id },
+    });
 
     res.status(200).json({
       success: true,
       message: "Order deleted successfully",
-      data: result,
     });
   } catch (error) {
     res.status(400).json({
@@ -299,11 +306,14 @@ exports.getSellerOrdersById = async (req, res) => {
   const id = req?.params?.id;
 
   try {
-    const orders = await Order.find({ "products.sellerId": id })
+    const orders = await SellerOrder.find({
+      sellerId: id,
+    })
       .sort({
         createdAt: -1,
       })
-      .populate("products.products.productId")
+      .populate("products.productId")
+      .populate("mainOrderId", "paymentMethod invoiceNumber userId")
       .skip(skip)
       .limit(limit)
       .lean();
@@ -330,62 +340,18 @@ exports.getSellerOrdersById = async (req, res) => {
   }
 };
 
-exports.getOrdersSeparateSeller = async (req, res) => {
-  const paginationOptions = pick(req.query, ["page", "limit"]);
-  const { page, limit, skip } = calculatePagination(paginationOptions);
-
+exports.getSellerOrderByOrderId = async (req, res) => {
   try {
-    // const ordersBySeller = await Order.aggregate([
-    //   { $unwind: "$products" },
-    //   { $group: { _id: "$products.sellerId", orders: { $push: "$$ROOT" } } },
-    //   {
-    //     $lookup: {
-    //       from: "sellers",
-    //       localField: "_id",
-    //       foreignField: "_id",
-    //       as: "sellerInfo",
-    //     },
-    //   },
-    // ]);
+    const { id } = req.params;
 
-    // const orders = await Order.find({ "products.sellerId": id })
-    //   .sort({
-    //     createdAt: -1,
-    //   })
-    //   .populate("userId")
-    //   .populate("products.products.productId")
-    //   .skip(skip)
-    //   .limit(limit)
-    //   .lean();
-
-    // Fetch all orders from the database
-    // const orders = await Order.find();
-
-    // // Group orders by sellerId
-    // const sellerOrders = {};
-    // orders.forEach((order) => {
-    //   order.products.forEach((product) => {
-    //     if (!sellerOrders[order.id]) {
-    //       sellerOrders[order.id] = [order];
-    //     } else {
-    //       sellerOrders[order.id].push(order);
-    //     }
-    //   });
-    // });
-
-    const total = await Order.countDocuments({});
-    const pages = Math.ceil(parseInt(total) / parseInt(limit));
+    const orders = await SellerOrder.findById(id)
+      .populate("products.productId")
+      .populate("mainOrderId", "paymentMethod invoiceNumber userId");
 
     res.status(200).json({
       success: true,
-      message: "Seller Orders get success",
-      meta: {
-        total,
-        pages,
-        page,
-        limit,
-      },
-      // data: ordersBySeller,
+      message: "Seller Order get success",
+      data: orders,
     });
   } catch (error) {
     res.status(400).json({

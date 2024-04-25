@@ -8,6 +8,8 @@ const {
   getOrderByTransactionId,
   getSellerOrdersById,
   getOrdersSeparateSeller,
+  getSellerOrderBySellerIdOrderId,
+  getSellerOrderByOrderId,
 } = require("../controllers/orderController");
 
 const router = require("express").Router();
@@ -15,13 +17,12 @@ const router = require("express").Router();
 router.post("/post-order", addOrder);
 router.get("/all-orders", getAllOrders);
 
-router.get("/orders-separate-seller", getOrdersSeparateSeller);
-
 router.get("/:id", getOrderById);
 router.get("/user-orders/:id", getOrdersByUserId);
 router.get("/transaction/:transactionId", getOrderByTransactionId);
 
 router.get("/seller-orders/:id", getSellerOrdersById);
+router.get("/seller-order/single/:id", getSellerOrderByOrderId);
 
 router.delete("/:id", deleteOrderById);
 

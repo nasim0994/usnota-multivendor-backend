@@ -45,13 +45,17 @@ const sellerSchema = new mongoose.Schema(
       default: true,
       enum: [true, false],
     },
-    like: {
-      type: Number,
-      default: 0,
-    },
     follow: {
       type: Number,
       default: 0,
+    },
+    // Payment
+    balance: {
+      type: Number,
+      default: 0,
+    },
+    paymentOption: {
+      type: Object,
     },
 
     // More
