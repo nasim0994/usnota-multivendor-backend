@@ -25,6 +25,12 @@ const productSchema = {
     ref: "Seller",
     required: true,
   },
+  status: {
+    type: String,
+    required: true,
+    default: "pending",
+    enum: ["pending", "processing", "warehouse"],
+  },
 };
 
 const OrderSchema = new mongoose.Schema(
@@ -64,8 +70,8 @@ const OrderSchema = new mongoose.Schema(
     products: [productSchema],
     status: {
       type: String,
-      enum: ["pending", "shipped", "delivered"],
       default: "pending",
+      enum: ["pending", "processing", "shipped", "delivered"],
     },
     isPaid: {
       type: Boolean,

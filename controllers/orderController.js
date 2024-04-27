@@ -360,3 +360,45 @@ exports.getSellerOrderByOrderId = async (req, res) => {
     });
   }
 };
+
+exports.updateSellerOrderStatus = async (req, res) => {
+  const { id } = req?.params;
+  const { status, mainOrderId, sellerId } = req?.body;
+
+  try {
+    const order = await Order.findOne({ _id: mainOrderId });
+    if (!order) {
+      return res.status(404).json({ error: "Order not found" });
+    }
+
+    const sellerOrder = order.products.find(
+      (order) => order.sellerId == sellerId
+    );
+
+    if (!sellerOrder) {
+      return res
+        .status(404)
+        .json({ error: "sellerOrder not found in the order" });
+    }
+
+    sellerOrder.status = status;
+    await order.save();
+
+    await SellerOrder.findByIdAndUpdate(
+      id,
+      { $set: { status } },
+      { new: true }
+    );
+
+    res.status(200).json({
+      success: true,
+      message: "Order status updated successfully",
+      data: order,
+    });
+  } catch (error) {
+    res.status(400).json({
+      success: false,
+      error: error.message,
+    });
+  }
+};
