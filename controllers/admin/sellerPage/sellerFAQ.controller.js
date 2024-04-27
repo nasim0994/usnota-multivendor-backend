@@ -1,4 +1,4 @@
-const SellerFAQ = require("../../../models/admin/sellerpage/sellerFAQ.model");
+const SellerFAQ = require("../../../models/admin/sellerPage/sellerFAQModel");
 
 exports.getSellerFAQ = async (req, res) => {
   try {

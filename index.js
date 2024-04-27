@@ -40,7 +40,7 @@ const paymentRouter = require("./routes/paymentRoute");
 const sellerRoutes = require("./routes/seller/seller.routes");
 const productRouter = require("./routes/seller/productRoutes");
 
-const paymentRequestRoutes = require("./routes/seller/paymentRequest.routes");
+const paymentRequestRoutes = require("./routes/seller/paymentRequestRoutes");
 
 const app = express();
 app.use(cors());

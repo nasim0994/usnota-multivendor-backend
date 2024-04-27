@@ -1,4 +1,4 @@
-const PaymentRequest = require("../../models/seller/paymentrequest.model");
+const PaymentRequest = require("../../models/seller/paymentRequestModel");
 const Seller = require("../../models/seller/seller.model");
 const { calculatePagination } = require("../../utils/calculatePagination");
 const { pick } = require("../../utils/pick");
