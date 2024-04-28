@@ -40,12 +40,14 @@ exports.addOrder = async (req, res) => {
     };
 
     const mainOrder = await Order.create(orderData);
+    console.log(mainOrder);
 
     if (mainOrder?._id) {
       const flattenedOrders = data.products.map((product) => ({
         sellerId: product.sellerId,
         products: product.products,
         mainOrderId: mainOrder?._id,
+        totalSellerPrice: product?.totalSellerPrice,
       }));
 
       await SellerOrder.insertMany(flattenedOrders);
@@ -256,7 +258,7 @@ exports.deleteOrderById = async (req, res) => {
   }
 };
 
-exports.updateStatus = async (req, res) => {
+exports.updateStatusByAdmin = async (req, res) => {
   const id = req?.params?.id;
   const status = req?.body?.status;
 
@@ -313,7 +315,7 @@ exports.getSellerOrdersById = async (req, res) => {
         createdAt: -1,
       })
       .populate("products.productId")
-      .populate("mainOrderId", "paymentMethod invoiceNumber userId")
+      .populate("mainOrderId", "paymentMethod invoiceNumber userId status")
       .skip(skip)
       .limit(limit)
       .lean();
@@ -346,7 +348,7 @@ exports.getSellerOrderByOrderId = async (req, res) => {
 
     const orders = await SellerOrder.findById(id)
       .populate("products.productId")
-      .populate("mainOrderId", "paymentMethod invoiceNumber userId");
+      .populate("mainOrderId", "paymentMethod invoiceNumber userId status");
 
     res.status(200).json({
       success: true,

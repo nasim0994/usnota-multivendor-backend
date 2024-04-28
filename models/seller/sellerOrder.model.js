@@ -12,6 +12,9 @@ const sellerOrderSchema = new mongoose.Schema(
       ref: "Seller",
       required: true,
     },
+    totalSellerPrice: {
+      type: Number,
+    },
     products: [
       {
         productId: {
@@ -36,6 +39,11 @@ const sellerOrderSchema = new mongoose.Schema(
       required: true,
       default: "pending",
       enum: ["pending", "processing", "warehouse"],
+    },
+    paid: {
+      type: Boolean,
+      default: false,
+      enum: [false, true],
     },
   },
   { timestamps: true }

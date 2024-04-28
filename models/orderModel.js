@@ -31,6 +31,11 @@ const productSchema = {
     default: "pending",
     enum: ["pending", "processing", "warehouse"],
   },
+  paid: {
+    type: Boolean,
+    default: false,
+    enum: [false, true],
+  },
 };
 
 const OrderSchema = new mongoose.Schema(

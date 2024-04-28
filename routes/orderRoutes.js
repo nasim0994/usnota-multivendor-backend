@@ -4,13 +4,11 @@ const {
   getOrderById,
   getAllOrders,
   deleteOrderById,
-  updateStatus,
   getOrderByTransactionId,
   getSellerOrdersById,
-  getOrdersSeparateSeller,
-  getSellerOrderBySellerIdOrderId,
   getSellerOrderByOrderId,
   updateSellerOrderStatus,
+  updateStatusByAdmin,
 } = require("../controllers/orderController");
 
 const router = require("express").Router();
@@ -27,7 +25,7 @@ router.get("/seller-order/single/:id", getSellerOrderByOrderId);
 
 router.delete("/:id", deleteOrderById);
 
-router.patch("/update-status/:id", updateStatus);
+router.patch("/admin/update-status/:id", updateStatusByAdmin);
 router.patch("/seller/update-status/:id", updateSellerOrderStatus);
 
 module.exports = router;
